@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101E32">
+<title>PsyChart</title>
+<style>
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-thai-400-normal.woff2) format('woff2');unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-thai-500-normal.woff2) format('woff2');unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans Thai';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-sans-thai-thai-600-normal.woff2) format('woff2');unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'IBM Plex Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Mono';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* Layout: sticky title + units + state chips, one scrolling view per tab, fixed bottom tab bar (Android style). */
+:root{
+  --bg:#F3F6FA; --surface:#FFFFFF; --ink:#101E32; --muted:#51627A; --line:#D4DCE8; --grid:#E4EAF2;
+  --accent:#087E8B; --on-pt:#FFFFFF;
+  --s0:#087E8B; --s1:#B45309; --s2:#6D3FC0; --s3:#1F7A4F; --s4:#B4237A; --s5:#8A6D00; --s6:#2B5FD9; --s7:#5B6770;
+  --hl:#B45309; --wl:#2F63B5; --vl:#7C3FA0;
+  --ok:#1F7A4F; --warn:#92400E; --bad:#B42318; --zone:#2E8B63;
+  --font-body:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
+  --font-data:'IBM Plex Mono',ui-monospace,'Roboto Mono',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101E32; --surface:#18293F; --ink:#F3F6FA; --muted:#9DB0C8; --line:#2B4262; --grid:#203450;
+    --accent:#2FB8C6; --on-pt:#06202A;
+    --s0:#2FB8C6; --s1:#F59E0B; --s2:#B79BF0; --s3:#5FC592; --s4:#F08CC4; --s5:#E3C25B; --s6:#86A8FF; --s7:#A9B6BE;
+    --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA;
+    --ok:#5FC592; --warn:#F5B84B; --bad:#F18A80; --zone:#4CB88A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101E32; --surface:#18293F; --ink:#F3F6FA; --muted:#9DB0C8; --line:#2B4262; --grid:#203450;
+  --accent:#2FB8C6; --on-pt:#06202A;
+  --s0:#2FB8C6; --s1:#F59E0B; --s2:#B79BF0; --s3:#5FC592; --s4:#F08CC4; --s5:#E3C25B; --s6:#86A8FF; --s7:#A9B6BE;
+  --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA;
+  --ok:#5FC592; --warn:#F5B84B; --bad:#F18A80; --zone:#4CB88A; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.5;
+  padding-block:0 96px;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{color:#F3F6FA;--bg:#101E32;--surface:#1B3050;--ink:#F3F6FA;--muted:#A9BAD0;--line:#2E4A6E;--accent:#2FB8C6;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#101E32;box-shadow:0 0 0 100vmax #101E32;clip-path:inset(0 -100vmax);display:grid;gap:8px;padding-block:10px 8px}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:19px;font-weight:600;letter-spacing:.01em;line-height:1.2}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.seg button{min-width:44px;min-height:34px;border:0;border-radius:8px;background:transparent;font-size:13px;color:var(--muted);font-family:var(--font-data);font-weight:500;padding:0 10px}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg.txt button{font-family:var(--font-body);font-size:13px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;min-width:48px;min-height:42px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);font-weight:600;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 14px}
+.chips .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.chips button[aria-selected="true"]{background:var(--c);border-color:var(--c);color:var(--on-pt)}
+.chips button[aria-selected="true"] .dot{background:var(--on-pt)}
+.chips button.add{color:var(--accent);border-style:dashed;font-size:20px;font-weight:500}
+
+main{display:grid;gap:14px;min-width:0}
+.view{display:grid;gap:14px;min-width:0}
+.view[hidden]{display:none}
+.view>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
+.card.tight{padding:8px}
+.h{margin:0;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.note{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+
+.field{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0}
+.field>label{font-size:13px;color:var(--muted)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--bg);min-height:52px;padding-right:14px}
+.inp:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.inp input{flex:1;min-width:0;border:0;background:transparent;padding:10px 14px;font-family:var(--font-data);font-size:22px;font-weight:500;outline:none;font-variant-numeric:tabular-nums}
+.inp .u{font-family:var(--font-data);font-size:13px;color:var(--muted)}
+.inp.sm{min-height:46px;padding-right:10px}
+.inp.sm input{font-size:18px;padding:8px 10px}
+select{width:100%;min-height:52px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 12px;font-size:15px}
+.err{margin:0;padding:10px 12px;border-radius:10px;font-size:13.5px;color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:500;font-size:14px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-pt);font-weight:600}
+.btn.danger{color:var(--bad)}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn[disabled]{opacity:.45;cursor:default}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px;min-width:0;position:relative;background:var(--surface)}
+.tile .l{font-size:12.5px;color:var(--muted);line-height:1.3}
+.tile .v{font-family:var(--font-data);font-size:23px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.25;overflow-wrap:anywhere}
+.tile .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+.tile.in{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+.tile.in .l{padding-right:32px}
+.tile.in::after{content:"ป้อน";position:absolute;top:8px;right:10px;font-size:11px;color:var(--accent);font-weight:600}
+.tile.dim .v{color:var(--muted)}
+.card .tile{background:var(--bg)}
+
+.pill{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:500;line-height:1.45}
+.pill b{font-family:var(--font-data);font-size:15px}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tg{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 12px;border-radius:19px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;color:var(--muted)}
+.tg i{display:inline-block;width:16px;height:0;border-top:2px solid var(--c)}
+.tg[aria-pressed="true"]{color:var(--ink);border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+.chartwrap{overflow:auto;border-radius:12px;max-height:78vh;-webkit-overflow-scrolling:touch}
+svg#chart{display:block;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+svg#chart.pan{touch-action:auto;cursor:grab}
+.gl{stroke:var(--grid);stroke-width:1;fill:none}
+.gl2{stroke:var(--grid);stroke-width:.5;fill:none;opacity:.8}
+.plot{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.rh{stroke:var(--muted);stroke-width:.9;fill:none;opacity:.65}
+.sat{stroke:var(--ink);stroke-width:1.9;fill:none}
+.hln{stroke:var(--hl);fill:none;stroke-width:.7;opacity:.9}
+.hln.mj{stroke-width:1}
+.wln{stroke:var(--wl);fill:none;stroke-width:.9;stroke-dasharray:4 2.5;opacity:.9}
+.vln{stroke:var(--vl);fill:none;stroke-width:.9;opacity:.85}
+.zone{fill:var(--zone);fill-opacity:.24;stroke:var(--zone);stroke-width:1.2}
+.tx{fill:var(--muted);font:10px var(--font-data)}
+.tx.rhl{font-size:9.5px}
+.tx.cap{font-size:9.5px;font-family:var(--font-body)}
+.tx.hl{fill:var(--hl);font-size:9.5px}
+.tx.wl{fill:var(--wl);font-size:9.5px}
+.tx.vl{fill:var(--vl);font-size:9px}
+.halo{paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.guide{stroke-width:1.2;stroke-dasharray:3 3;fill:none}
+.proc{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 3;fill:none}
+.ptl{font:600 11px var(--font-body);fill:var(--on-pt);text-anchor:middle;pointer-events:none}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);padding:6px 8px 8px}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+.sw-line{width:18px;height:0;border-top:1px solid var(--muted)}
+.sw-sat{width:18px;height:0;border-top:2px solid var(--ink)}
+.sw-h{width:18px;height:0;border-top:2px solid var(--hl)}
+.sw-w{width:18px;height:0;border-top:2px dashed var(--wl)}
+.sw-v{width:18px;height:0;border-top:2px solid var(--vl)}
+.sw-zone{width:16px;height:10px;background:color-mix(in srgb,var(--zone) 28%,transparent);border:1px solid var(--zone)}
+.reads{display:grid;gap:8px}
+.read{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;min-height:56px}
+.read[aria-pressed="true"]{border-width:2px;padding:9px 11px;border-color:var(--c)}
+.read .pt{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--on-pt);background:var(--c)}
+.read .t{font-family:var(--font-data);font-size:13px;line-height:1.5;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+
+.zed{display:grid;gap:12px}
+.zc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.zc[hidden]{display:none}
+
+.proc-card .prochead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.proc-card .prochead .btn{min-height:36px;padding:0 12px;font-size:13px}
+.pairs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.procout{display:grid;gap:12px}
+.hero{display:grid;gap:2px}
+.hero .big{font-family:var(--font-data);font-size:34px;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums}
+.hero .big small{font-size:15px;color:var(--muted);font-weight:400;margin-left:4px}
+.hero .cap{font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);justify-self:start}
+.dl{font-family:var(--font-data);font-size:12.5px;color:var(--muted)}
+.empty{padding:20px;border:1.5px dashed var(--line);border-radius:14px;text-align:center;color:var(--muted);font-size:14px}
+
+.pbtn{flex:1;min-width:0;display:grid;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:4px 12px;min-height:46px}
+.pbtn .pcap{font-size:11px;color:var(--muted);line-height:1.3}
+.pbtn .pname{font-size:15px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ibtn{flex:none;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
+.ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.scrim{position:absolute;inset:0;background:rgba(6,20,26,.5)}
+.panel{position:relative;width:100%;max-width:560px;max-height:calc(100% - env(safe-area-inset-top,0px) - 24px);overflow:auto;background:var(--surface);border-radius:20px 20px 0 0;display:grid;gap:14px;align-content:start;padding-top:16px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.panel>*{min-width:0}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.phead h2{margin:0;font-size:18px}
+.pjlist{display:grid;gap:8px}
+.pj{display:grid;gap:2px;text-align:left;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;min-height:56px}
+.pj[aria-pressed="true"]{border:2px solid var(--accent);padding:9px 11px;background:color-mix(in srgb,var(--accent) 9%,var(--bg))}
+.pj .pjn{font-weight:600;overflow-wrap:anywhere}
+.pj .pjm{font-size:12.5px;color:var(--muted)}
+.inp.txt input{font-family:var(--font-body);font-size:17px;font-weight:500}
+.seg.wide{display:flex}
+.seg.wide button{flex:1;min-height:42px}
+.flab{font-size:13px;color:var(--muted)}
+.imgwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh;background:#fff}
+.imgwrap img{display:block;height:auto;max-width:none}
+/* reference page */
+details.ref{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0}
+details.ref>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;min-height:52px}
+details.ref>summary::-webkit-details-marker{display:none}
+details.ref>summary::after{content:"+";font-family:var(--font-data);font-size:20px;color:var(--muted)}
+details.ref[open]>summary::after{content:"−"}
+details.ref .body{padding:0 16px 16px;display:grid;gap:10px;font-size:14px}
+details.ref p{margin:0}
+details.ref ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.fx{font-family:var(--font-data);font-size:12.5px;line-height:1.6;background:var(--bg);padding:10px 12px;border-radius:10px;overflow-x:auto;white-space:pre}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-size:13px;min-width:100%}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl th{color:var(--muted);font-weight:600}
+.tbl td.m{font-family:var(--font-data)}
+.bib{display:grid;gap:8px;padding-left:20px;margin:0}
+.bib li{font-size:13.5px}
+
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  padding-top:8px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px));
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+.nav button{border:0;background:transparent;min-height:56px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;font-weight:500}
+.nav .ico{width:56px;height:30px;border-radius:15px;display:grid;place-items:center}
+.nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-selected="true"]{color:var(--ink);font-weight:600}
+.nav button[aria-selected="true"] .ico{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent)}
+@media (min-width:520px){body{max-width:560px;margin-inline:auto}.nav{padding-inline:calc((100vw - 560px)/2 + 10px)}}
+@media (prefers-reduced-motion:no-preference){.tile,.pill{transition:background .2s,border-color .2s}}
+</style>
+<script>
+/* Standalone/Android shim: no Claude runtime here; save files through the native bridge or a normal download. */
+(function(){
+  function b64(blob){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1]||'');};r.onerror=function(){rej(new Error('read'));};r.readAsDataURL(blob);});}
+  window.claude={use:function(n){
+    if(n!=='downloads') return Promise.resolve(null);
+    return Promise.resolve({save:async function(o){
+      var blob=(o.data instanceof Blob)?o.data:new Blob([o.data]);
+      if(window.AndroidBridge&&window.AndroidBridge.saveFile){
+        var ok=window.AndroidBridge.saveFile(o.filename,await b64(blob));
+        if(ok!=='ok'){ var e=new Error(ok); e.code='bad_request'; throw e; }
+        return {status:'saved'};
+      }
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=o.filename; document.body.appendChild(a); a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},4000); return {status:'saved'};
+    }});
+  }};
+})();
+</script>
+</head><body>
+
+
+<header class="top">
+  <div class="toprow">
+    <button class="pbtn" id="btn-proj" type="button" aria-haspopup="dialog"><span class="pcap">Psychrometric · โปรเจกต์</span><span class="pname" id="pname"></span></button>
+    <div class="seg" id="usw" role="tablist" aria-label="หน่วย"><button role="tab" data-u="SI" aria-selected="true">SI</button><button role="tab" data-u="IP" aria-selected="false">IP</button></div>
+    <button class="ibtn" id="btn-exp" type="button" aria-label="ส่งออกไฟล์ PDF หรือ JPG" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button>
+  </div>
+  <div class="chips" id="chips" role="tablist" aria-label="สถานะอากาศ"></div>
+</header>
+
+<main>
+<!-- ===== คำนวณ ===== -->
+<section class="view" id="v-calc">
+  <div class="card">
+    <h2 class="h" id="calc-title">ป้อนค่าสถานะ A</h2>
+    <div class="field">
+      <label for="in-t">Tdb อุณหภูมิกระเปาะแห้ง</label>
+      <div class="inp"><input id="in-t" type="number" inputmode="decimal" step="0.1" autocomplete="off"><span class="u" id="u-t">°C</span></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="in-mode">ค่าที่ 2 ที่รู้</label>
+        <select id="in-mode">
+          <option value="rh">RH ความชื้นสัมพัทธ์</option>
+          <option value="twb">Twb อุณหภูมิกระเปาะเปียก</option>
+          <option value="tdp">Tdp จุดน้ำค้าง</option>
+          <option value="w">W ความชื้นจำเพาะ</option>
+          <option value="h">h เอนทัลปี</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="in-val" id="lab-val">ค่า</label>
+        <div class="inp"><input id="in-val" type="number" inputmode="decimal" step="0.1" autocomplete="off"><span class="u" id="u-val">%</span></div>
+      </div>
+    </div>
+    <p class="err" id="err" hidden></p>
+    <div class="btns">
+      <button class="btn" id="dup-state" type="button">ทำซ้ำสถานะนี้</button>
+      <button class="btn danger" id="del-state" type="button">ลบสถานะนี้</button>
+    </div>
+    <p class="note">ค่าเริ่มต้นของ A และ B เป็นตัวอย่าง (อากาศภายนอก 32 °C / 70 %RH และลมจ่าย 13 °C / 90 %RH) แก้หรือลบได้ เพิ่มสถานะได้สูงสุด 8 สถานะ (A–H)</p>
+  </div>
+
+  <div class="card">
+    <h2 class="h">ผลลัพธ์</h2>
+    <div class="tiles" id="tiles"></div>
+    <div id="zone-out"></div>
+    <div class="zed" id="zed-calc"></div>
+  </div>
+
+  <div class="card">
+    <h2 class="h">ความดันบรรยากาศ</h2>
+    <div class="field">
+      <label for="in-alt">ระดับความสูงจากน้ำทะเล</label>
+      <div class="inp"><input id="in-alt" type="number" inputmode="decimal" step="10" autocomplete="off"><span class="u" id="u-alt">m</span></div>
+    </div>
+    <p class="note" id="alt-note"></p>
+  </div>
+</section>
+
+<!-- ===== กราฟ ===== -->
+<section class="view" id="v-chart" hidden>
+  <div class="tools">
+    <button class="tg" data-l="h" style="--c:var(--hl)" aria-pressed="true"><i></i>เอนทัลปี h</button>
+    <button class="tg" data-l="twb" style="--c:var(--wl)" aria-pressed="false"><i></i>Twb</button>
+    <button class="tg" data-l="v" style="--c:var(--vl)" aria-pressed="true"><i></i>ปริมาตร v</button>
+  </div>
+  <div class="tools">
+    <div class="seg" id="zoomsw" role="group" aria-label="ซูม"><button data-z="1" aria-pressed="true">1×</button><button data-z="2" aria-pressed="false">2×</button><button data-z="3" aria-pressed="false">3×</button></div>
+    <div class="seg txt" id="modesw" role="group" aria-label="โหมดสัมผัส" hidden><button data-m="point" aria-pressed="true">ย้ายจุด</button><button data-m="pan" aria-pressed="false">เลื่อนดู</button></div>
+  </div>
+  <div class="card tight">
+    <div class="chartwrap" id="cwrap"><svg id="chart" viewBox="0 0 360 440" role="img" aria-label="Psychrometric chart" style="width:100%"></svg></div>
+    <div class="legend" id="legend"></div>
+  </div>
+  <p class="note">แตะหรือลากบนกราฟเพื่อย้ายจุดของสถานะที่เลือก เส้นประแนวนอนชี้ไปที่ W ทางขวาและตัดเส้นอิ่มตัวที่จุดน้ำค้าง เมื่อซูมให้สลับเป็นโหมดเลื่อนดูเพื่อเลื่อนกราฟ</p>
+  <div class="reads" id="reads"></div>
+  <p class="note" id="oor" hidden></p>
+  <div class="card">
+    <h2 class="h">เขตเป้าหมายบนกราฟ</h2>
+    <div class="zed" id="zed-chart"></div>
+  </div>
+</section>
+
+<!-- ===== โหลด ===== -->
+<section class="view" id="v-load" hidden>
+  <div id="load-sum" class="view"></div>
+  <div id="procs" class="view"></div>
+  <button class="btn pri" id="add-proc" type="button">＋ เพิ่มกระบวนการ</button>
+  <p class="note">แต่ละกระบวนการคือการเปลี่ยนอากาศจากสถานะต้นทางไปปลายทาง เช่น คอยล์เย็น ฮีตเตอร์ หรือเครื่องทำความชื้น ใส่ได้หลายกระบวนการต่อเนื่องกัน</p>
+</section>
+
+<!-- ===== อ้างอิง ===== -->
+<section class="view" id="v-ref" hidden>
+  <details class="ref" id="ref-img" open><summary>แผนภูมิ Psychrometric ที่ระดับน้ำทะเล</summary><div class="body">
+    <p>ไฟล์รูปที่ความดัน 101.325 kPa มีเส้น RH, h, Twb และ v ใช้แนบในเอกสารออกแบบได้ ระดับความสูงอื่นดูได้ในแท็บกราฟ</p>
+    <div class="tools">
+      <div class="seg" id="imgsw" role="group" aria-label="หน่วยของแผนภูมิ"><button data-i="SI" aria-pressed="true">SI</button><button data-i="IP" aria-pressed="false">IP</button></div>
+      <div class="seg" id="imgz" role="group" aria-label="ซูมรูป"><button data-z="1" aria-pressed="true">1×</button><button data-z="2" aria-pressed="false">2×</button><button data-z="3" aria-pressed="false">3×</button></div>
+    </div>
+    <div class="imgwrap" id="imgwrap"><img id="refimg" alt="Psychrometric chart ที่ระดับน้ำทะเล" width="3300" height="2340" style="width:100%"></div>
+    <div class="btns"><button class="btn" id="dl-png" type="button">บันทึก PNG</button><button class="btn" id="dl-pdf" type="button">บันทึก PDF</button></div>
+    <p class="note" id="img-status" role="status"></p>
+  </div></details>
+  <details class="ref"><summary>โปรเจกต์และการส่งออก</summary><div class="body">
+    <ul>
+      <li>แตะชื่อโปรเจกต์ที่มุมบนซ้ายเพื่อสร้าง เปลี่ยนชื่อ ทำสำเนา สลับ หรือลบโปรเจกต์ แต่ละโปรเจกต์เก็บสถานะ กระบวนการ ระดับความสูง หน่วย เกณฑ์ห้อง และเส้นบนกราฟแยกกัน</li>
+      <li>ถ้าเปิดลิงก์ด้วยบัญชี Claude ข้อมูลจะซิงก์ไว้กับบัญชีและเห็นเหมือนกันทุกอุปกรณ์ เป็นข้อมูลส่วนตัวของแต่ละคน แม้แชร์ลิงก์ให้คนอื่น ถ้าซิงก์ไม่ได้ จะเก็บไว้ในเครื่องนี้แทน</li>
+      <li>ปุ่มลูกศรลงที่มุมบนขวาสร้างไฟล์ PDF หรือ JPG ขนาด A4 ได้ทั้งรายงานเต็ม (ตารางสถานะ กราฟ โหลด) และเฉพาะกราฟ</li>
+    </ul>
+  </div></details>
+  <details class="ref" open><summary>ขอบเขตและสมมติฐาน</summary><div class="body">
+    <p>แอปคำนวณตามสมการใน ASHRAE Handbook—Fundamentals บทที่ 1 (Psychrometrics) ภายในเป็นหน่วย SI เสมอ แล้วแปลงเป็น IP ตอนป้อนและแสดงผล จึงสลับหน่วยไปมาได้โดยค่าไม่เพี้ยน</p>
+    <ul>
+      <li>ช่วงที่คำนวณได้ Tdb −40 ถึง 80 °C ใช้สมการ Pws ช่วงน้ำแข็งและช่วงน้ำตามอุณหภูมิ</li>
+      <li>กราฟ SI แสดง 0–50 °C และ W ถึง 30 g/kg กราฟ IP แสดง 32–120 °F และ W ถึง 0.028 lb/lb (196 gr/lb) ตามช่วงของ ASHRAE Psychrometric Chart No.1</li>
+      <li>ถือว่าอากาศและไอน้ำเป็นก๊าซอุดมคติ ไม่ใส่ enhancement factor ของไอน้ำ ทำให้ W อิ่มตัวต่ำกว่าตารางของ ASHRAE เล็กน้อย (ประมาณ 0.4 % ที่ 20 °C)</li>
+      <li>นิยาม RH ที่ใช้ φ = Pw / Pws ที่ Tdb และความดันเดียวกัน</li>
+      <li>ความดันบรรยากาศคำนวณจากระดับความสูง ใช้ร่วมกันทุกสถานะและทุกเส้นบนกราฟ</li>
+    </ul>
+  </div></details>
+
+  <details class="ref"><summary>สมการสถานะอากาศ</summary><div class="body">
+    <p>ความดันไอน้ำอิ่มตัว Pws (Hyland–Wexler) T = t + 273.15 K, Pws เป็น Pa</p>
+    <div class="fx">t ≥ 0 °C
+ln Pws = C8/T + C9 + C10·T + C11·T² + C12·T³ + C13·ln T
+C8  = −5.8002206e3     C9  = 1.3914993
+C10 = −4.8640239e−2    C11 = 4.1764768e−5
+C12 = −1.4452093e−8    C13 = 6.5459673
+
+t &lt; 0 °C
+ln Pws = C1/T + C2 + C3·T + C4·T² + C5·T³ + C6·T⁴ + C7·ln T
+C1 = −5.6745359e3   C2 = 6.3925247
+C3 = −9.677843e−3   C4 = 6.2215701e−7
+C5 = 2.0747825e−9   C6 = −9.484024e−13
+C7 = 4.1635019</div>
+    <p>สมบัติอื่น (p คือความดันรวม kPa)</p>
+    <div class="fx">W   = 0.621945 · Pw / (p − Pw)          [kg/kg]
+Pw  = RH · Pws
+h   = 1.006·t + W·(2501 + 1.86·t)         [kJ/kg dry air]
+v   = 0.287042·(t + 273.15)·(1 + 1.607858·W) / p   [m³/kg dry air]
+ρ   = (1 + W) / v                          [kg/m³]</div>
+    <p>กรณีป้อน h คำนวณ W = (h − 1.006·t) / (2501 + 1.86·t) ส่วนกรณีป้อน W ใช้ Pw = p·W / (0.621945 + W)</p>
+  </div></details>
+
+  <details class="ref"><summary>การหา Twb และ Tdp</summary><div class="body">
+    <p>Twb (t*) หาจากสมการสมดุลพลังงานของกระเปาะเปียก แล้วแก้ t* ด้วยวิธี bisection (60 รอบ) จนได้ W ตรงกับที่ต้องการ</p>
+    <div class="fx">t* ≥ 0:  W = [(2501 − 2.326·t*)·W*s − 1.006·(t − t*)]
+           / (2501 + 1.86·t − 4.186·t*)
+t* &lt; 0:  W = [(2830 − 0.24·t*)·W*s − 1.006·(t − t*)]
+           / (2830 + 1.86·t − 2.1·t*)
+W*s = W อิ่มตัวที่ t*</div>
+    <p>Tdp คืออุณหภูมิที่ Pws(Tdp) = Pw แก้ด้วย bisection เช่นกัน ถ้า Pw ต่ำมาก (W ≈ 0) จะแสดง “—”</p>
+  </div></details>
+
+  <details class="ref"><summary>โหลดของกระบวนการ A → B</summary><div class="body">
+    <div class="fx">ṁ  = V / (3600 · v_A)                [kg/s dry air]
+Q  = ṁ · (h_B − h_A)                    [kW]
+C  = จุด (t_B, W_A)
+Qs = ṁ · (h_C − h_A)       Sensible
+Ql = ṁ · (h_B − h_C)       Latent
+SHR = |Qs| / |Q|
+น้ำควบแน่น = ṁ · (W_A − W_B) · 3600    [kg/h]
+1 TR = 3.517 kW = 12,000 Btu/h</div>
+    <ul>
+      <li>V คืออัตราไหลของอากาศที่สถานะต้นทาง (m³/h หรือ CFM)</li>
+      <li>เครื่องหมายลบหมายถึงดึงความร้อนออก</li>
+      <li>เส้นกระบวนการบนกราฟเป็นเส้นตรงระหว่างสองจุด ซึ่งเป็นการประมาณ เส้นจริงของคอยล์เย็นเป็นเส้นโค้ง แต่โหลดที่คำนวณขึ้นกับสถานะต้นทางและปลายทางเท่านั้น</li>
+    </ul>
+  </div></details>
+
+  <details class="ref"><summary>ความดันและระดับความสูง</summary><div class="body">
+    <div class="fx">p = 101.325 · (1 − 2.25577×10⁻⁵ · Z)^5.2559   [kPa, Z เป็นเมตร]</div>
+    <div class="tbl"><table>
+      <tr><th>ความสูง</th><th>ความดัน</th></tr>
+      <tr><td class="m">0 m</td><td class="m">101.325 kPa · 14.696 psi</td></tr>
+      <tr><td class="m">500 m</td><td class="m">95.46 kPa · 13.85 psi</td></tr>
+      <tr><td class="m">1,000 m</td><td class="m">89.88 kPa · 13.04 psi</td></tr>
+      <tr><td class="m">1,500 m</td><td class="m">84.56 kPa · 12.26 psi</td></tr>
+      <tr><td class="m">2,000 m</td><td class="m">79.50 kPa · 11.53 psi</td></tr>
+    </table></div>
+  </div></details>
+
+  <details class="ref"><summary>ตัวคูณแปลงหน่วย SI → IP</summary><div class="body">
+    <div class="tbl"><table>
+      <tr><th>ปริมาณ</th><th>SI</th><th>IP</th><th>คูณด้วย</th></tr>
+      <tr><td>อุณหภูมิ</td><td>°C</td><td>°F</td><td class="m">×1.8 + 32</td></tr>
+      <tr><td>ผลต่างอุณหภูมิ</td><td>K</td><td>°F</td><td class="m">×1.8</td></tr>
+      <tr><td>W</td><td>g/kg</td><td>gr/lb</td><td class="m">×7</td></tr>
+      <tr><td>เอนทัลปี</td><td>kJ/kg</td><td>Btu/lb</td><td class="m">×0.429923</td></tr>
+      <tr><td>ปริมาตรจำเพาะ</td><td>m³/kg</td><td>ft³/lb</td><td class="m">×16.0185</td></tr>
+      <tr><td>ความหนาแน่น</td><td>kg/m³</td><td>lb/ft³</td><td class="m">×0.062428</td></tr>
+      <tr><td>ความดัน</td><td>kPa</td><td>psi</td><td class="m">×0.145038</td></tr>
+      <tr><td>ความยาว</td><td>m</td><td>ft</td><td class="m">×3.28084</td></tr>
+      <tr><td>อัตราไหล</td><td>m³/h</td><td>CFM</td><td class="m">×0.588577</td></tr>
+      <tr><td>กำลัง</td><td>kW</td><td>Btu/h</td><td class="m">×3412.14</td></tr>
+      <tr><td>มวลอากาศ</td><td>kg/s</td><td>lb/h</td><td class="m">×7936.64</td></tr>
+      <tr><td>น้ำ</td><td>kg/h</td><td>lb/h</td><td class="m">×2.20462</td></tr>
+    </table></div>
+    <p>1 lb = 7,000 grain จึง 1 g/kg = 7 gr/lb</p>
+  </div></details>
+
+  <details class="ref"><summary>วิธีอ่านกราฟ</summary><div class="body">
+    <ul>
+      <li>แกนนอนคือ Tdb แกนตั้งทางขวาคือ W</li>
+      <li>เส้นโค้งสีเทาคือ RH เส้นหนาคือ RH 100 % (อิ่มตัว)</li>
+      <li>เส้นเฉียงสีส้มคือเอนทัลปี h ตัวเลขอยู่ที่ด้านนอกเส้นอิ่มตัว</li>
+      <li>เส้นประสีน้ำเงินคือ Twb ซึ่งเกือบขนานกับเส้น h แต่ไม่ทับกัน</li>
+      <li>เส้นชันสีม่วงคือปริมาตรจำเพาะ v</li>
+      <li>จุดน้ำค้างอ่านได้โดยลากเส้นแนวนอนจากจุดไปทางซ้ายจนชนเส้นอิ่มตัว (วงกลมโปร่ง)</li>
+      <li>พื้นที่สีเขียวคือเขตเป้าหมายของห้อง</li>
+    </ul>
+  </div></details>
+
+  <details class="ref"><summary>เกณฑ์ห้อง (ASHRAE 170)</summary><div class="body">
+    <p>ค่าที่ตั้งไว้เป็นตัวอย่างเพื่อใช้เปรียบเทียบเท่านั้น</p>
+    <div class="tbl"><table>
+      <tr><th>ห้อง</th><th>อุณหภูมิ</th><th>RH</th></tr>
+      <tr><td>ห้องผ่าตัด</td><td class="m">20–24 °C (68–75 °F)</td><td class="m">20–60 %</td></tr>
+      <tr><td>ห้องผู้ป่วย</td><td class="m">21–24 °C (70–75 °F)</td><td class="m">ไม่เกิน 60 %</td></tr>
+    </table></div>
+    <p>เกณฑ์ของห้องผ่าตัดตรงกับที่ ASHRAE Journal อ้างถึงจาก Standard 170 ส่วนค่าห้องผู้ป่วยควรเทียบกับ Table 7.1 ของ Standard 170 ฉบับที่โครงการใช้ และเกณฑ์ของผู้ออกแบบหรือเจ้าของโครงการ ใช้ตัวเลือก “กำหนดเอง” เพื่อใส่ช่วงของโครงการได้</p>
+  </div></details>
+
+  <details class="ref"><summary>ตัวอย่างค่าสำหรับตรวจสอบ (ความดัน 101.325 kPa)</summary><div class="body">
+    <div class="tbl"><table>
+      <tr><th>ป้อน</th><th>W g/kg</th><th>h kJ/kg</th><th>v m³/kg</th><th>Tdp °C</th><th>Twb °C</th></tr>
+      <tr><td class="m">20 °C, 50 %RH</td><td class="m">7.26</td><td class="m">38.55</td><td class="m">0.8402</td><td class="m">9.27</td><td class="m">13.78</td></tr>
+      <tr><td class="m">32 °C, 70 %RH</td><td class="m">21.14</td><td class="m">86.3</td><td class="m">0.8938</td><td class="m">25.8</td><td class="m">27.3</td></tr>
+    </table></div>
+    <p>แอปตรวจย้อนกลับแล้วว่า การป้อน Twb, Tdp หรือ h ของค่าข้างต้นให้ RH เดิม</p>
+  </div></details>
+
+  <details class="ref"><summary>เอกสารอ้างอิง</summary><div class="body">
+    <ol class="bib">
+      <li>ASHRAE. <i>2021 ASHRAE Handbook—Fundamentals</i>, Chapter 1: Psychrometrics. สมการ Pws, W, h, v, Twb และความดันบรรยากาศ</li>
+      <li>Hyland, R.W. and Wexler, A. 1983. Formulations for the thermodynamic properties of the saturated phases of H₂O from 173.15 K to 473.15 K. <i>ASHRAE Transactions</i> 89(2A).</li>
+      <li>ANSI/ASHRAE/ASHE Standard 170, <i>Ventilation of Health Care Facilities</i>. เกณฑ์อุณหภูมิและความชื้นของพื้นที่ในสถานพยาบาล</li>
+      <li>ASHRAE Journal, <i>Conditioning for the Environment of Critical Care Hospital Operating Rooms</i>. อ้างค่าห้องผ่าตัด 20–24 °C และ RH 20–60 %</li>
+    </ol>
+    <p class="note">ผลคำนวณใช้เพื่อประกอบการออกแบบเบื้องต้น ตรวจสอบกับตารางหรือซอฟต์แวร์ที่ได้รับการรับรองก่อนนำไปใช้ในเอกสารส่งงาน</p>
+  </div></details>
+</section>
+</main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="scrim" data-close="1"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="phead"><h2 id="sh-title">โปรเจกต์</h2><button class="btn" id="sh-x" type="button" data-close="1">ปิด</button></div>
+    <div class="view" id="sh-proj">
+      <div class="field"><label for="pj-name">ชื่อโปรเจกต์ปัจจุบัน</label><div class="inp txt"><input id="pj-name" type="text" maxlength="60" autocomplete="off"></div></div>
+      <p class="note" id="pj-status" role="status"></p>
+      <div class="btns">
+        <button class="btn pri" id="pj-new" type="button">＋ โปรเจกต์ใหม่</button>
+        <button class="btn" id="pj-dup" type="button">ทำสำเนา</button>
+        <button class="btn danger" id="pj-del" type="button">ลบโปรเจกต์นี้</button>
+      </div>
+      <div class="pjlist" id="pj-list"></div>
+    </div>
+    <div class="view" id="sh-exp" hidden>
+      <div class="field"><span class="flab">รูปแบบไฟล์</span><div class="seg txt wide" id="fmtsw" role="group" aria-label="รูปแบบไฟล์"><button data-f="pdf" aria-pressed="true">PDF</button><button data-f="jpg" aria-pressed="false">JPG</button></div></div>
+      <div class="field"><span class="flab">เนื้อหา</span><div class="seg txt wide" id="cntsw" role="group" aria-label="เนื้อหา"><button data-c="full" aria-pressed="true">รายงานเต็ม</button><button data-c="chart" aria-pressed="false">เฉพาะกราฟ</button></div></div>
+      <p class="note" id="exp-note"></p>
+      <button class="btn pri" id="exp-go" type="button">สร้างไฟล์และบันทึก</button>
+      <p class="note" id="exp-status" role="status"></p>
+    </div>
+  </div>
+</div>
+
+<nav class="nav" id="nav" role="tablist" aria-label="เมนูหลัก">
+  <button role="tab" data-tab="calc" aria-selected="true"><span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg></span>คำนวณ</button>
+  <button role="tab" data-tab="chart" aria-selected="false"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M6 17c4 0 6-3 8-7s3-4 5-5"/></svg></span>กราฟ</button>
+  <button role="tab" data-tab="load" aria-selected="false"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/></svg></span>โหลด</button>
+  <button role="tab" data-tab="ref" aria-selected="false"><span class="ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg></span>อ้างอิง</button>
+</nav>
+
+<script>
+(function(){
+'use strict';
+// ===== CORE: ASHRAE Fundamentals ch.1 (SI) =====
+function pws(t){ // saturation pressure, kPa
+  var T=t+273.15, l;
+  if(t<0){ l=-5.6745359e3/T+6.3925247-9.677843e-3*T+6.2215701e-7*T*T+2.0747825e-9*T*T*T-9.484024e-13*T*T*T*T+4.1635019*Math.log(T); }
+  else { l=-5.8002206e3/T+1.3914993-4.8640239e-2*T+4.1764768e-5*T*T-1.4452093e-8*T*T*T+6.5459673*Math.log(T); }
+  return Math.exp(l)/1000;
+}
+function pressure(altM){ return 101.325*Math.pow(1-2.25577e-5*altM,5.2559); }
+function wFromPw(pw,P){ return 0.621945*pw/(P-pw); }
+function pwFromW(W,P){ return P*W/(0.621945+W); }
+function tdpFromPw(pw){
+  if(!(pw>pws(-60))) return NaN;
+  var lo=-60,hi=100,i,m; for(i=0;i<60;i++){ m=(lo+hi)/2; if(pws(m)<pw) lo=m; else hi=m; } return (lo+hi)/2;
+}
+function wFromTwb(t,ts,P){
+  var Wss=wFromPw(pws(ts),P);
+  if(ts>=0) return ((2501-2.326*ts)*Wss-1.006*(t-ts))/(2501+1.86*t-4.186*ts);
+  return ((2830-0.24*ts)*Wss-1.006*(t-ts))/(2830+1.86*t-2.1*ts);
+}
+function twbFrom(t,W,P){
+  var lo=-60,hi=t,i,m;
+  if(wFromTwb(t,hi,P)<=W+1e-12) return t;
+  for(i=0;i<60;i++){ m=(lo+hi)/2; if(wFromTwb(t,m,P)<W) lo=m; else hi=m; }
+  return (lo+hi)/2;
+}
+function enth(t,W){ return 1.006*t+W*(2501+1.86*t); }
+function compute(st,P){
+  var t=+st.t, v=+st.v, W, ps, Ws;
+  if(st.t===''||st.v===''||!isFinite(t)||!isFinite(v)) return {err:'กรอกตัวเลขให้ครบทั้งสองช่อง'};
+  if(t<-40||t>80) return {err:'Tdb ควรอยู่ระหว่าง −40 ถึง 80 °C'};
+  ps=pws(t); Ws=wFromPw(ps,P);
+  switch(st.mode){
+    case 'rh': if(v<0||v>100) return {err:'RH ต้องอยู่ระหว่าง 0 ถึง 100 %'}; W=wFromPw(v/100*ps,P); break;
+    case 'twb': if(v>t+1e-9) return {err:'Twb ต้องไม่สูงกว่า Tdb'}; W=wFromTwb(t,v,P); break;
+    case 'tdp': if(v>t+1e-9) return {err:'Tdp ต้องไม่สูงกว่า Tdb'}; W=wFromPw(pws(v),P); break;
+    case 'w': W=v/1000; break;
+    case 'h': W=(v-1.006*t)/(2501+1.86*t); break;
+  }
+  if(W<-1e-9) return {err:'ค่านี้ให้ความชื้นติดลบ ลองลดค่า h หรือเพิ่ม Tdb'};
+  if(W>Ws*(1+1e-6)+1e-9) return {err:'ค่านี้เกินจุดอิ่มตัว (RH เกิน 100 %) ที่ Tdb นี้'};
+  W=Math.max(0,Math.min(W,Ws));
+  var pw=pwFromW(W,P), vv=0.287042*(t+273.15)*(1+1.607858*W)/P;
+  return {t:t,P:P,ps:ps,pw:pw,W:W,Ws:Ws,rh:pw/ps*100,tdp:tdpFromPw(pw),twb:twbFrom(t,W,P),h:enth(t,W),v:vv,rho:(1+W)/vv};
+}
+// ===== END CORE =====
+
+/* ---------- chart-line helpers ---------- */
+function tsatFromH(h,P){ var lo=-40,hi=90,m,i; for(i=0;i<50;i++){ m=(lo+hi)/2; if(enth(m,wFromPw(pws(m),P))<h) lo=m; else hi=m; } return (lo+hi)/2; }
+function wAtV(v,t,P){ return (v*P/(0.287042*(t+273.15))-1)/1.607858; }
+function tsatFromV(v,P,tmax){ var lo=-40,hi=tmax,m,i; if(wAtV(v,hi,P)>=wFromPw(pws(hi),P)) return hi; for(i=0;i<50;i++){ m=(lo+hi)/2; if(wAtV(v,m,P)>wFromPw(pws(m),P)) lo=m; else hi=m; } return (lo+hi)/2; }
+
+var KEY='psychrometric-pocket-v2', LET='ABCDEFGH';
+var TMIN=0,TMAX=50,WMAX=0.030, VW=360,VH=440,ML=10,MR=36,MT=34,MB=34,PW=VW-ML-MR,PH=VH-MT-MB;
+var ZONES={
+  or:{name:'ห้องผ่าตัด',tmin:20,tmax:24,rmin:20,rmax:60},
+  pt:{name:'ห้องผู้ป่วย',tmin:21,tmax:24,rmin:0,rmax:60}
+};
+var MODES={rh:{l:'RH ความชื้นสัมพัทธ์',k:null,u:'%'},twb:{l:'Twb อุณหภูมิกระเปาะเปียก',k:'T',u:'t'},tdp:{l:'Tdp จุดน้ำค้าง',k:'T',u:'t'},w:{l:'W ความชื้นจำเพาะ',k:'W',u:'w'},h:{l:'h เอนทัลปี',k:'h',u:'h'}};
+function defaultData(){ return {units:'SI',alt:0,active:'A',
+  states:[{id:'A',t:32,mode:'rh',v:70},{id:'B',t:13,mode:'rh',v:90}],
+  procs:[{from:'A',to:'B',flow:1000}],
+  zone:'or',custom:{tmin:20,tmax:24,rmin:20,rmax:60},layers:{h:true,twb:false,v:true}}; }
+function blankData(units){ var d=defaultData(); d.units=units==='IP'?'IP':'SI'; d.states=[{id:'A',t:24,mode:'rh',v:50}]; d.procs=[]; return d; }
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+function normData(d){
+  var b=defaultData(), o=Object.assign({},b,clone(d||{}));
+  o.layers=Object.assign({},b.layers,o.layers||{}); o.custom=Object.assign({},b.custom,o.custom||{});
+  if(!Array.isArray(o.states)||!o.states.length) o.states=blankData().states;
+  var ids=o.states.map(function(s){return s.id;});
+  if(ids.indexOf(o.active)<0) o.active=ids[0];
+  o.procs=(Array.isArray(o.procs)?o.procs:[]).filter(function(p){return ids.indexOf(p.from)>=0&&ids.indexOf(p.to)>=0;});
+  if(['or','pt','custom','off'].indexOf(o.zone)<0) o.zone='or';
+  if(o.units!=='IP') o.units='SI';
+  return o;
+}
+var S={tab:'calc'};
+var DKEYS=['units','alt','active','states','procs','zone','custom','layers'];
+function loadInto(d){ var o=normData(d); DKEYS.forEach(function(k){ S[k]=o[k]; }); }
+function projData(){ var o={}; DKEYS.forEach(function(k){ o[k]=S[k]; }); return clone(o); }
+function newPid(){ return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+var LSK='psychrometric-pocket-v3', PROJ={}, CUR=null, SYNCED={};
+var DBS={mode:'local',col:null,got:false,err:'',timer:null};
+function legacyData(){
+  try{ var v2=JSON.parse(localStorage.getItem('psychrometric-pocket-v2')||'null'); if(v2&&v2.states&&v2.states.length) return v2; }catch(e){}
+  try{ var old=JSON.parse(localStorage.getItem('psychrometric-pocket-v1')||'null');
+    if(old&&old.A&&old.B) return {units:old.units||'SI',alt:old.alt||0,states:[Object.assign({id:'A'},old.A),Object.assign({id:'B'},old.B)],procs:[{from:'A',to:'B',flow:old.flow===undefined?1000:old.flow}],zone:old.zone||'or'}; }catch(e){}
+  return null;
+}
+(function boot(){
+  var st=null; try{ st=JSON.parse(localStorage.getItem(LSK)||'null'); }catch(e){}
+  if(st&&st.projects&&Object.keys(st.projects).length){
+    PROJ=st.projects; SYNCED=st.synced||{}; CUR=PROJ[st.cur]?st.cur:Object.keys(PROJ).sort()[0]; S.tab=st.tab||'calc';
+  } else {
+    var lg=legacyData(), id=newPid();
+    PROJ[id]={name:'โปรเจกต์ 1',updatedAt:Date.now(),data:normData(lg),fresh:!lg}; CUR=id;
+    S.tab=(lg&&lg.tab)||'calc';
+  }
+  if(['calc','chart','load','ref'].indexOf(S.tab)<0) S.tab='calc';
+  loadInto(PROJ[CUR].data);
+})();
+var ui={zoom:1,mode:'point',armDel:false,armPj:false,procKey:'',zlUnits:null,img:'SI',imgz:1,fmt:'pdf',cnt:'full'};
+
+var dirty={}, delQ={}, flushT=null, flushing=false;
+function lsWrite(){ try{ localStorage.setItem(LSK,JSON.stringify({cur:CUR,tab:S.tab,projects:PROJ,synced:SYNCED})); }catch(e){} }
+function save(){
+  var p=PROJ[CUR], d=projData();
+  if(JSON.stringify(d)!==JSON.stringify(p.data)){ p.data=d; p.updatedAt=Date.now(); delete p.fresh; markDirty(CUR); }
+  lsWrite();
+}
+function markDirty(id){ if(DBS.mode!=='sync') return; dirty[id]=true; clearTimeout(flushT); flushT=setTimeout(flush,900); }
+async function flush(){
+  if(flushing||!DBS.col) return; flushing=true;
+  try{
+    var ids=Object.keys(dirty), i, id, p;
+    for(i=0;i<ids.length;i++){
+      id=ids[i]; delete dirty[id]; p=PROJ[id]; if(!p) continue;
+      try{ await DBS.col.doc(id).set(clone({name:p.name,updatedAt:p.updatedAt,data:p.data})); SYNCED[id]=true; DBS.err=''; }
+      catch(e){ DBS.err=(e&&e.code)||'error'; if(DBS.err==='unavailable') dirty[id]=true; }
+    }
+    var dl=Object.keys(delQ);
+    for(i=0;i<dl.length;i++){
+      try{ await DBS.col.doc(dl[i]).delete(); delete delQ[dl[i]]; delete SYNCED[dl[i]]; }catch(e){ DBS.err=(e&&e.code)||'error'; delete delQ[dl[i]]; }
+    }
+    lsWrite();
+  } finally { flushing=false; }
+  if(Object.keys(dirty).length){ clearTimeout(flushT); flushT=setTimeout(flush,3000); }
+  refreshSheet();
+}
+function onSnap(snap){
+  if(snap.metadata.fromCache&&!DBS.got) return;
+  clearTimeout(DBS.timer); DBS.err=''; DBS.got=true;
+  var remote={}, any=false, changedCur=false, id;
+  snap.docs.forEach(function(d){ var v=d.data(); if(v&&v.data&&d.id.charAt(0)==='p'){ remote[d.id]=v; any=true; } });
+  Object.keys(PROJ).forEach(function(k){ if(any&&PROJ[k].fresh&&!SYNCED[k]){ delete PROJ[k]; if(k===CUR) changedCur=true; } });
+  Object.keys(remote).forEach(function(k){
+    var r=remote[k], l=PROJ[k]; SYNCED[k]=true;
+    if(dirty[k]) return;
+    if(!l||(r.updatedAt||0)>(l.updatedAt||0)){ PROJ[k]={name:r.name||'',updatedAt:r.updatedAt||0,data:normData(r.data)}; if(k===CUR) changedCur=true; }
+    else if((r.updatedAt||0)<(l.updatedAt||0)) markDirty(k);
+  });
+  Object.keys(PROJ).forEach(function(k){
+    if(remote[k]) return;
+    if(SYNCED[k]&&!dirty[k]){ delete PROJ[k]; delete SYNCED[k]; if(k===CUR) changedCur=true; }
+    else markDirty(k);
+  });
+  if(!Object.keys(PROJ).length){ id=newPid(); PROJ[id]={name:'โปรเจกต์ 1',updatedAt:Date.now(),data:normData(null)}; CUR=id; changedCur=true; markDirty(id); }
+  if(!PROJ[CUR]){ CUR=Object.keys(PROJ).sort()[0]; changedCur=true; }
+  if(changedCur){ loadInto(PROJ[CUR].data); ui.procKey=''; }
+  lsWrite(); render(); refreshSheet();
+}
+async function initDb(){
+  try{
+    if(!window.claude||!window.claude.use) return;
+    var user=await window.claude.use('user'), db=await window.claude.use('db');
+    if(!user||!db) return;
+    var uid=await user.id(); if(!uid) return;
+    DBS.col=db.collection('data/users/'+uid); DBS.mode='sync';
+    DBS.timer=setTimeout(function(){ DBS.err='timeout'; refreshSheet(); },10000);
+    DBS.col.onSnapshot(onSnap,function(e){ DBS.err=(e&&e.code)||'error'; if(DBS.err==='revoked'||DBS.err==='unavailable') DBS.mode='local'; refreshSheet(); });
+    refreshSheet();
+  }catch(e){ DBS.mode='local'; }
+}
+
+/* ---------- units (state is stored in SI) ---------- */
+var UN={SI:{t:'°C',w:'g/kg',h:'kJ/kg',v:'m³/kg',rho:'kg/m³',p:'kPa',len:'m',flow:'m³/h',pow:'kW',mass:'kg/s',mh:'kg/h'},
+        IP:{t:'°F',w:'gr/lb',h:'Btu/lb',v:'ft³/lb',rho:'lb/ft³',p:'psi',len:'ft',flow:'CFM',pow:'Btu/h',mass:'lb/h',mh:'lb/h'}};
+var F={dT:1.8,W:7,h:0.429923,v:16.0185,rho:0.062428,p:0.145038,len:3.28084,flow:0.588577,pow:3412.14,mass:7936.64,mh:2.20462};
+function isIP(){ return S.units==='IP'; }
+function un(k){ return UN[S.units][k]; }
+function toU(k,x){ if(!isIP()||!k||typeof x!=='number'||!isFinite(x)) return x; return k==='T'?x*1.8+32:x*F[k]; }
+function fromU(k,x){ if(!isIP()||!k) return x; return k==='T'?(x-32)/1.8:x/F[k]; }
+function modeUnit(m){ return m==='rh'?'%':un(MODES[m].u); }
+function applyRange(){ if(isIP()){ TMAX=(120-32)/1.8; WMAX=0.028; } else { TMAX=50; WMAX=0.030; } }
+
+var $=function(id){return document.getElementById(id);};
+var clamp=function(x,a,b){return Math.max(a,Math.min(b,x));};
+function fmt(x,d){ return (typeof x==='number'&&isFinite(x))?x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).replace('-','−'):'—'; }
+function sgn(x,d){ if(!isFinite(x)) return '—'; var s=fmt(x,d); return (x>0&&parseFloat(s.replace(/,/g,''))!==0?'+':'')+s; }
+function disp(x,d){ return String(+x.toFixed(d)); }
+function showIn(k,x){ if(x==='') return ''; return isIP()?disp(toU(k,+x),2):String(x); }
+function readIn(k,s){ if(s==='') return ''; return isIP()?fromU(k,+s):s; }
+function altNum(){ var a=+S.alt; return isFinite(a)?clamp(a,-400,5000):0; }
+function setVal(el,val){ var s=String(val); if(document.activeElement!==el&&el.value!==s) el.value=s; }
+function idx(id){ return LET.indexOf(id); }
+function scol(id){ return 'var(--s'+idx(id)+')'; }
+function stOf(id){ for(var i=0;i<S.states.length;i++) if(S.states[i].id===id) return S.states[i]; return null; }
+
+/* ---------- target zone ---------- */
+function getZone(){
+  if(S.zone==='or') return ZONES.or;
+  if(S.zone==='pt') return ZONES.pt;
+  if(S.zone==='custom'){
+    var c=S.custom, f=['tmin','tmax','rmin','rmax'], v={}, i;
+    for(i=0;i<4;i++){ if(c[f[i]]===''||!isFinite(+c[f[i]])) return {bad:'กรอกช่วงให้ครบทั้ง 4 ช่อง'}; v[f[i]]=+c[f[i]]; }
+    if(v.tmin>=v.tmax) return {bad:'อุณหภูมิต่ำสุดต้องน้อยกว่าสูงสุด'};
+    if(v.rmin>=v.rmax||v.rmin<0||v.rmax>100) return {bad:'RH ต้องอยู่ในช่วง 0–100 % และต่ำสุดน้อยกว่าสูงสุด'};
+    return {name:'กำหนดเอง',tmin:v.tmin,tmax:v.tmax,rmin:v.rmin,rmax:v.rmax};
+  }
+  return null;
+}
+function zT(z){ return disp(toU('T',z.tmin),1)+'–'+disp(toU('T',z.tmax),1)+' '+un('t'); }
+function zR(z){ return z.rmin>0?('RH '+z.rmin+'–'+z.rmax+' %'):('RH ไม่เกิน '+z.rmax+' %'); }
+function zoneOptLabel(key){
+  if(key==='custom') return 'กำหนดเอง';
+  var z=ZONES[key]; return z.name+' '+zT(z)+' · '+(z.rmin>0?z.rmin+'–'+z.rmax:'≤'+z.rmax)+' %RH';
+}
+function zoneCheck(c){
+  var z=getZone(); if(!z||!c||c.err) return null;
+  if(z.bad) return {bad:z.bad};
+  var issues=[], e=0.05;
+  if(c.t<z.tmin-e) issues.push('อุณหภูมิต่ำกว่า '+disp(toU('T',z.tmin),1)+' '+un('t'));
+  if(c.t>z.tmax+e) issues.push('อุณหภูมิสูงกว่า '+disp(toU('T',z.tmax),1)+' '+un('t'));
+  if(c.rh<z.rmin-e) issues.push('RH ต่ำกว่า '+z.rmin+' %');
+  if(c.rh>z.rmax+e) issues.push('RH สูงกว่า '+z.rmax+' %');
+  return {z:z,issues:issues};
+}
+function zoneEditor(sfx){
+  var fields=[['tmin','อุณหภูมิต่ำสุด','t'],['tmax','อุณหภูมิสูงสุด','t'],['rmin','RH ต่ำสุด','%'],['rmax','RH สูงสุด','%']];
+  return '<div class="field"><label for="zs-'+sfx+'">เกณฑ์ห้อง</label><select id="zs-'+sfx+'" class="zsel"></select></div>'+
+    '<div class="zc" id="zc-'+sfx+'" hidden>'+fields.map(function(f){
+      return '<div class="field"><label for="z-'+f[0]+'-'+sfx+'">'+f[1]+'</label><div class="inp sm"><input id="z-'+f[0]+'-'+sfx+'" class="zin" data-f="'+f[0]+'" type="number" inputmode="decimal" step="0.5" autocomplete="off"><span class="u" data-zu="'+f[2]+'"></span></div></div>';
+    }).join('')+'</div><p class="err" id="ze-'+sfx+'" hidden></p>'+
+    '<p class="note">ค่าอ้างอิงตัวอย่างจาก ASHRAE 170 (ดูแท็บอ้างอิง) เลือก “กำหนดเอง” เพื่อใส่ช่วงของโครงการ</p>';
+}
+['calc','chart'].forEach(function(s){ $('zed-'+s).innerHTML=zoneEditor(s); });
+
+function ctx(){
+  var P=pressure(altNum()), c={};
+  S.states.forEach(function(s){ c[s.id]=compute(s,P); });
+  return {P:P,c:c};
+}
+
+/* ---------- calc view ---------- */
+function renderCalc(X){
+  var st=stOf(S.active), c=X.c[S.active], md=MODES[st.mode], IP=isIP();
+  $('calc-title').textContent='ป้อนค่าสถานะ '+S.active;
+  $('u-t').textContent=un('t'); $('u-alt').textContent=un('len');
+  $('in-alt').step=IP?50:10;
+  setVal($('in-t'),showIn('T',st.t)); setVal($('in-val'),showIn(md.k,st.v)); $('in-mode').value=st.mode;
+  $('lab-val').textContent=md.l; $('u-val').textContent=modeUnit(st.mode);
+  var err=$('err'); err.hidden=!c.err; err.textContent=c.err||'';
+  var ok=!c.err;
+  var items=[['rh','RH ความชื้นสัมพัทธ์','%',ok&&c.rh,1],['twb','Twb กระเปาะเปียก',un('t'),ok&&toU('T',c.twb),1],['tdp','Tdp จุดน้ำค้าง',un('t'),ok&&toU('T',c.tdp),1],
+    ['w','W ความชื้นจำเพาะ',un('w'),ok&&toU('W',c.W*1000),IP?1:2],['h','h เอนทัลปี',un('h'),ok&&toU('h',c.h),IP?2:1],['v','v ปริมาตรจำเพาะ',un('v'),ok&&toU('v',c.v),IP?3:4],
+    ['rho','ρ ความหนาแน่น',un('rho'),ok&&toU('rho',c.rho),IP?4:3],['pw','Pw ความดันไอน้ำ',un('p'),ok&&toU('p',c.pw),IP?4:3]];
+  $('tiles').innerHTML=items.map(function(it){
+    return '<div class="tile'+(it[0]===st.mode?' in':'')+(ok?'':' dim')+'"><span class="l">'+it[1]+'</span><span class="v">'+fmt(it[3],it[4])+'<small>'+it[2]+'</small></span></div>';
+  }).join('');
+  var zc=zoneCheck(c), zo=$('zone-out');
+  if(!zc){ zo.innerHTML=''; }
+  else if(zc.bad){ zo.innerHTML='<div class="pill warn"><b>!</b><span>ยังเทียบเกณฑ์ไม่ได้: '+zc.bad+'</span></div>'; }
+  else if(!zc.issues.length){ zo.innerHTML='<div class="pill ok"><b>✓</b><span>สถานะ '+S.active+' อยู่ในเกณฑ์ '+zc.z.name+' ('+zT(zc.z)+', '+zR(zc.z)+')</span></div>'; }
+  else { zo.innerHTML='<div class="pill warn"><b>!</b><span>สถานะ '+S.active+' นอกเกณฑ์ '+zc.z.name+': '+zc.issues.join(', ')+'</span></div>'; }
+  setVal($('in-alt'),showIn('len',S.alt));
+  $('alt-note').textContent='ความดัน '+fmt(toU('p',X.P),IP?4:3)+' '+un('p')+' ใช้กับทุกสถานะและเส้นบนกราฟ (ระดับน้ำทะเล = '+(IP?'14.696 psi':'101.325 kPa')+')';
+  var dl=$('del-state'); dl.disabled=S.states.length<2; dl.textContent=ui.armDel?'แตะอีกครั้งเพื่อลบ':'ลบสถานะนี้'; dl.classList.toggle('armed',ui.armDel);
+}
+
+/* ---------- chart view ---------- */
+function Xs(t){ return ML+(t-TMIN)/(TMAX-TMIN)*PW; }
+function Ys(w){ return MT+PH-w/WMAX*PH; }
+function inRange(c){ return c&&!c.err&&c.t>=TMIN&&c.t<=TMAX&&c.W<=WMAX; }
+function rhPath(rh,P,t0,t1,rev){
+  var d='',t,pts=[];
+  for(t=t0;t<=t1+1e-9;t+=0.5) pts.push(t);
+  if(rev) pts.reverse();
+  pts.forEach(function(tt,i){ d+=(i?'L':'M')+Xs(tt).toFixed(1)+' '+Ys(wFromPw(rh*pws(tt),P)).toFixed(1); });
+  return d;
+}
+function poly(pts){ return pts.map(function(p,i){ return (i?'L':'M')+Xs(p[0]).toFixed(1)+' '+Ys(p[1]).toFixed(1); }).join(''); }
+
+var chartInfo={oor:[],z:null};
+function chartMarkup(X){
+  var P=X.P, IP=isIP(), g='', i, k, clipped='', labels='';
+  g+='<defs><clipPath id="clp"><rect x="'+ML+'" y="'+MT+'" width="'+PW+'" height="'+PH+'"/></clipPath></defs>';
+  g+='<rect class="plot" x="'+ML+'" y="'+MT+'" width="'+PW+'" height="'+PH+'"/>';
+  /* grid and tick labels */
+  var tl=[], wl=[];
+  if(IP){ for(k=32;k<=120;k+=2) tl.push([(k-32)/1.8,k,(k===32||k%10===0)]); for(k=0;k<=196;k+=4) wl.push([k/7,k,k%20===0]); }
+  else { for(k=0;k<=50;k++) tl.push([k,k,k%5===0]); for(k=0;k<=30;k++) wl.push([k,k,k%5===0]); }
+  tl.forEach(function(a){ var x=Xs(a[0]).toFixed(1); g+='<line class="'+(a[2]?'gl':'gl2')+'" x1="'+x+'" y1="'+MT+'" x2="'+x+'" y2="'+(MT+PH)+'"/>'+(a[2]?'<text class="tx" x="'+x+'" y="'+(MT+PH+13)+'" text-anchor="middle">'+a[1]+'</text>':''); });
+  wl.forEach(function(a){ var y=Ys(a[0]/1000).toFixed(1); g+='<line class="'+(a[2]?'gl':'gl2')+'" x1="'+ML+'" y1="'+y+'" x2="'+(ML+PW)+'" y2="'+y+'"/>'+(a[2]?'<text class="tx" x="'+(ML+PW+4)+'" y="'+(+y+3.5).toFixed(1)+'">'+a[1]+'</text>':''); });
+  g+='<text class="tx cap" x="'+(ML+PW/2)+'" y="'+(VH-6)+'" text-anchor="middle">Tdb  '+un('t')+'</text>';
+  g+='<text class="tx cap" x="'+(VW-2)+'" y="12" text-anchor="end">W  '+un('w')+'</text>';
+  var capx=ML+2;
+  if(S.layers.h){ g+='<text class="tx hl" x="'+capx+'" y="12">h  '+un('h')+'</text>'; capx+=62; }
+  if(S.layers.twb){ g+='<text class="tx wl" x="'+capx+'" y="12">Twb  '+un('t')+'</text>'; capx+=62; }
+  if(S.layers.v){ g+='<text class="tx vl" x="'+capx+'" y="12">v  '+un('v')+'</text>'; }
+
+  var z=getZone(); if(z&&z.bad) z=null;
+  if(z){ clipped+='<path class="zone" d="'+rhPath(z.rmax/100,P,z.tmin,z.tmax,false)+rhPath(z.rmin/100,P,z.tmin,z.tmax,true).replace('M','L')+'Z"/>'; }
+
+  /* enthalpy lines */
+  if(S.layers.h){
+    var step=IP?2.5/F.h:5, hTop=enth(TMAX,WMAX)+step, n, hv, ts, Wss, a0, a1, pts, tt;
+    for(n=1;n*step<=hTop;n++){
+      hv=n*step; ts=tsatFromH(hv,P); Wss=wFromPw(pws(ts),P);
+      var major=(n%2===0), lab=IP?disp(n*2.5,1):String(hv), start, onSat=false, onTop=false;
+      if(ts<TMIN){ start=[TMIN,(hv-1.006*TMIN)/(2501+1.86*TMIN)]; }
+      else if(Wss>WMAX){ start=[(hv-2501*WMAX)/(1.006+1.86*WMAX),WMAX]; onTop=true; }
+      else { start=[ts,Wss]; onSat=true; }
+      if(start[0]>TMAX) continue;
+      var tEnd=hv/1.006, end; if(tEnd>TMAX) end=[TMAX,(hv-1.006*TMAX)/(2501+1.86*TMAX)]; else end=[tEnd,0];
+      pts=[]; for(k=0;k<=8;k++){ tt=start[0]+(end[0]-start[0])*k/8; pts.push([tt,(hv-1.006*tt)/(2501+1.86*tt)]); }
+      clipped+='<path class="hln'+(major?' mj':'')+'" d="'+poly(pts)+'"/>';
+      if(major&&onSat&&Xs(ts)-3>ML+12) labels+='<text class="tx hl halo" x="'+(Xs(ts)-3).toFixed(1)+'" y="'+(Ys(Wss)-3).toFixed(1)+'" text-anchor="end">'+lab+'</text>';
+      else if(major&&onTop&&start[0]<=TMAX-1) labels+='<text class="tx hl halo" x="'+Xs(start[0]).toFixed(1)+'" y="'+(MT-4)+'" text-anchor="middle">'+lab+'</text>';
+    }
+  }
+  /* wet-bulb lines */
+  if(S.layers.twb){
+    var twList=[]; if(IP){ twList.push(0); for(k=40;k<=100;k+=10) twList.push((k-32)/1.8); } else { for(k=0;k<=35;k+=5) twList.push(k); }
+    twList.forEach(function(tw){
+      var Wss=wFromPw(pws(tw),P), A=(2501-2.326*tw)*Wss, tz=tw+A/1.006, ptsw=[], j, tstart=tw, onTopw=false;
+      if(Wss>WMAX){ tstart=(A+1.006*tw-WMAX*(2501-4.186*tw))/(1.006+1.86*WMAX); onTopw=true; }
+      var tend=Math.min(tz,TMAX);
+      for(j=0;j<=8;j++){ var tt2=tstart+(tend-tstart)*j/8; ptsw.push([tt2,Math.max(0,wFromTwb(tt2,tw,P))]); }
+      clipped+='<path class="wln" d="'+poly(ptsw)+'"/>';
+      var lx=Xs(tw)-3;
+      if(!onTopw&&lx>ML+14) labels+='<text class="tx wl halo" x="'+lx.toFixed(1)+'" y="'+(Ys(Wss)+11).toFixed(1)+'" text-anchor="end">'+(IP?Math.round(tw*1.8+32):tw)+'</text>';
+    });
+  }
+  /* specific-volume lines */
+  if(S.layers.v){
+    var vList=[], v0, vi; if(IP){ for(k=12.5;k<=15.01;k+=0.5) vList.push(k/F.v); } else { for(k=0.78;k<=0.961;k+=0.02) vList.push(k); }
+    vList.forEach(function(vv){
+      var t0=vv*P/0.287042-273.15, tb=Math.min(t0,TMAX+0.5), te=Math.max(tsatFromV(vv,P,tb),TMIN-1), ptsv=[], j;
+      for(j=0;j<=10;j++){ var tt3=tb+(te-tb)*j/10; ptsv.push([tt3,Math.max(0,wAtV(vv,tt3,P))]); }
+      clipped+='<path class="vln" d="'+poly(ptsv)+'"/>';
+      var vlab=IP?disp(vv*F.v,1):vv.toFixed(2);
+      if(t0>=TMIN+3&&t0<=TMAX-4){
+        var wl2=0.0022, tl2=(function(){ var lo=t0-40,hi=t0,m,q; for(q=0;q<40;q++){ m=(lo+hi)/2; if(wAtV(vv,m,P)>wl2) lo=m; else hi=m; } return (lo+hi)/2; })();
+        labels+='<text class="tx vl halo" x="'+(Xs(tl2)+3).toFixed(1)+'" y="'+Ys(wl2).toFixed(1)+'" text-anchor="start">'+vlab+'</text>';
+      } else if(t0>TMAX){
+        var wr=wAtV(vv,TMAX,P);
+        if(wr>0.0015&&wr<WMAX-0.002) labels+='<text class="tx vl halo" x="'+(Xs(TMAX)-3).toFixed(1)+'" y="'+(Ys(wr)-3).toFixed(1)+'" text-anchor="end">'+vlab+'</text>';
+      }
+    });
+  }
+  /* RH curves */
+  for(i=1;i<=9;i++){
+    clipped+='<path class="rh" d="'+rhPath(i/10,P,TMIN,TMAX,false)+'"/>';
+    var lt=TMAX, lw=wFromPw(i/10*pws(lt),P), t4;
+    if(lw>WMAX){ for(t4=TMAX;t4>=TMIN;t4-=0.25){ if(wFromPw(i/10*pws(t4),P)<=WMAX){ lt=t4; break; } } lw=wFromPw(i/10*pws(lt),P); }
+    labels+='<text class="tx rhl halo" x="'+(Xs(lt)-3).toFixed(1)+'" y="'+Math.max(MT+10,Ys(lw)-3).toFixed(1)+'" text-anchor="end">'+(i*10)+'</text>';
+  }
+  clipped+='<path class="sat" d="'+rhPath(1,P,TMIN,TMAX,false)+'"/>';
+
+  /* processes, guides, markers */
+  var oor=[];
+  S.states.forEach(function(s){ var c=X.c[s.id]; if(c.err) oor.push('สถานะ '+s.id+' ยังไม่มีค่าที่ใช้ได้'); else if(!inRange(c)) oor.push('สถานะ '+s.id+' อยู่นอกช่วงกราฟ ('+disp(toU('T',TMIN),0)+'–'+disp(toU('T',TMAX),0)+' '+un('t')+', W ไม่เกิน '+disp(toU('W',WMAX*1000),0)+' '+un('w')+')'); });
+  S.procs.forEach(function(p){
+    var A=X.c[p.from],B=X.c[p.to]; if(p.from===p.to||!inRange(A)||!inRange(B)) return;
+    var x1=Xs(A.t),y1=Ys(A.W),x2=Xs(B.t),y2=Ys(B.W),dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);
+    if(len<=26) return;
+    var ux=dx/len,uy=dy/len, ex=x2-ux*13, ey=y2-uy*13, sx=x1+ux*11, sy=y1+uy*11;
+    clipped+='<path class="proc" d="M'+sx.toFixed(1)+' '+sy.toFixed(1)+'L'+ex.toFixed(1)+' '+ey.toFixed(1)+'"/>';
+    clipped+='<path d="M'+ex.toFixed(1)+' '+ey.toFixed(1)+'l'+(-ux*8-uy*4.5).toFixed(1)+' '+(-uy*8+ux*4.5).toFixed(1)+'l'+(uy*9).toFixed(1)+' '+(-ux*9).toFixed(1)+'z" fill="var(--ink)"/>';
+  });
+  var act=S.active, ac=X.c[act], col=scol(act);
+  if(inRange(ac)){
+    var px=Xs(ac.t),py=Ys(ac.W);
+    clipped+='<line class="guide" stroke="'+col+'" x1="'+px+'" y1="'+py+'" x2="'+px+'" y2="'+(MT+PH)+'"/>';
+    var tdx=isFinite(ac.tdp)?Xs(clamp(ac.tdp,TMIN,TMAX)):Xs(TMIN);
+    clipped+='<line class="guide" stroke="'+col+'" x1="'+tdx+'" y1="'+py+'" x2="'+(ML+PW)+'" y2="'+py+'"/>';
+    if(isFinite(ac.tdp)&&ac.tdp>=TMIN) clipped+='<circle cx="'+tdx+'" cy="'+py+'" r="3.5" fill="var(--surface)" stroke="'+col+'" stroke-width="1.6"/>';
+  }
+  S.states.forEach(function(s){
+    var c=X.c[s.id]; if(!inRange(c)) return;
+    var cx=Xs(c.t), cy=Ys(c.W), isA=s.id===act;
+    clipped+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(isA?11:9)+'" fill="'+scol(s.id)+'" stroke="'+(isA?'var(--ink)':'var(--surface)')+'" stroke-width="'+(isA?2.2:1.5)+'"/><text class="ptl" x="'+cx+'" y="'+(cy+4)+'">'+s.id+'</text>';
+  });
+  g+='<g clip-path="url(#clp)">'+clipped+'</g>'+labels;
+  chartInfo={oor:oor,z:z};
+  return g;
+}
+function renderChart(X){
+  var g=chartMarkup(X), oor=chartInfo.oor, z=chartInfo.z, act=S.active, IP=isIP();
+  $('chart').innerHTML=g;
+
+  var lg='<span><i class="sw-line"></i>%RH 10–90</span><span><i class="sw-sat"></i>อิ่มตัว 100 %</span>';
+  if(S.layers.h) lg+='<span><i class="sw-h"></i>h '+un('h')+'</span>';
+  if(S.layers.twb) lg+='<span><i class="sw-w"></i>Twb '+un('t')+'</span>';
+  if(S.layers.v) lg+='<span><i class="sw-v"></i>v '+un('v')+'</span>';
+  if(z) lg+='<span><i class="sw-zone"></i>เขตเป้าหมาย: '+z.name+'</span>';
+  $('legend').innerHTML=lg;
+
+  $('reads').innerHTML=S.states.map(function(s){
+    var c=X.c[s.id], txt=c.err?c.err:fmt(toU('T',c.t),1)+' '+un('t')+' · '+fmt(c.rh,1)+' %RH · W '+fmt(toU('W',c.W*1000),IP?1:2)+' '+un('w')+' · h '+fmt(toU('h',c.h),IP?2:1)+' '+un('h');
+    return '<button class="read" data-id="'+s.id+'" style="--c:'+scol(s.id)+'" aria-pressed="'+(s.id===act)+'"><span class="pt">'+s.id+'</span><span class="t">'+txt+'</span></button>';
+  }).join('');
+  var o=$('oor'); o.hidden=!oor.length; o.textContent=oor.join(' · ');
+
+  var sv=$('chart'); sv.style.width=(ui.zoom*100)+'%'; sv.classList.toggle('pan',ui.mode==='pan'&&ui.zoom>1);
+  $('modesw').hidden=ui.zoom<=1;
+  document.querySelectorAll('#zoomsw button').forEach(function(b){ b.setAttribute('aria-pressed',String(+b.dataset.z===ui.zoom)); });
+  document.querySelectorAll('#modesw button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.m===ui.mode)); });
+  document.querySelectorAll('.tg').forEach(function(b){ b.setAttribute('aria-pressed',String(!!S.layers[b.dataset.l])); });
+}
+
+/* ---------- load view ---------- */
+function procName(dt,dW){
+  var e=0.05;
+  if(Math.abs(dt)<e&&Math.abs(dW)<e) return 'ไม่เปลี่ยนสถานะ';
+  if(Math.abs(dW)<e) return dt>0?'ให้ความร้อนอย่างเดียว (Sensible heating)':'ทำความเย็นอย่างเดียว (Sensible cooling)';
+  if(Math.abs(dt)<e) return dW>0?'เพิ่มความชื้น (Humidification)':'ลดความชื้น (Dehumidification)';
+  if(dt<0&&dW<0) return 'ลดอุณหภูมิ + ลดความชื้น (Cooling & dehumidification)';
+  if(dt>0&&dW>0) return 'ให้ความร้อน + เพิ่มความชื้น';
+  if(dt>0&&dW<0) return 'ให้ความร้อน + ลดความชื้น';
+  return 'ลดอุณหภูมิ + เพิ่มความชื้น (Evaporative cooling)';
+}
+function procCalc(p,X){
+  var A=X.c[p.from],B=X.c[p.to];
+  if(!A||!B) return {err:'ไม่พบสถานะ'};
+  if(p.from===p.to) return {err:'เลือกสถานะต้นทางและปลายทางให้ต่างกัน'};
+  if(A.err||B.err) return {err:'ตรวจค่าสถานะ '+(A.err?p.from:p.to)+' ในแท็บคำนวณก่อน'};
+  var Q=+p.flow; if(p.flow===''||!isFinite(Q)||Q<=0) return {err:'กรอกอัตราไหลมากกว่า 0'};
+  var m=Q/3600/A.v, hC=enth(B.t,A.W), qT=m*(B.h-A.h), qS=m*(hC-A.h), qL=m*(B.h-hC);
+  var dt=B.t-A.t, dW=(B.W-A.W)*1000, water=m*(A.W-B.W)*3600;
+  return {A:A,B:B,m:m,qT:qT,qS:qS,qL:qL,dt:dt,dW:dW,water:water,shr:Math.abs(qT)>1e-9?Math.abs(qS)/Math.abs(qT):NaN,name:procName(dt,dW),volB:m*B.v*3600};
+}
+function procOutHTML(r){
+  if(r.err) return '<p class="err">'+r.err+'</p>';
+  var IP=isIP(), pd=IP?0:2, cool=r.qT<0;
+  var tiles=[['โหลด Sensible',un('pow'),sgn(toU('pow',r.qS),pd)],['โหลด Latent',un('pow'),sgn(toU('pow',r.qL),pd)],
+    ['SHR','',fmt(r.shr,2)],[r.water>=0?'น้ำควบแน่น':'น้ำที่ต้องเติม',un('mh'),fmt(toU('mh',Math.abs(r.water)),2)],
+    ['มวลอากาศแห้ง ṁ',un('mass'),fmt(toU('mass',r.m),IP?0:4)],['ปริมาณอากาศที่ปลายทาง',un('flow'),fmt(toU('flow',r.volB),0)]];
+  return '<span class="tag">'+r.name+'</span>'+
+    '<div class="hero"><span class="cap">'+(cool?'โหลดรวม ดึงความร้อนออก':(r.qT>0?'โหลดรวม เติมความร้อน':'โหลดรวม'))+'</span>'+
+    '<span class="big">'+fmt(toU('pow',Math.abs(r.qT)),pd)+'<small>'+un('pow')+'</small></span>'+
+    '<span class="big" style="font-size:24px">'+fmt(Math.abs(r.qT)/3.517,2)+'<small>TR</small></span></div>'+
+    '<div class="dl">Δt '+sgn(toU('dT',r.dt),1)+' '+un('t')+' · ΔW '+sgn(toU('W',r.dW),IP?1:2)+' '+un('w')+'</div>'+
+    '<div class="tiles">'+tiles.map(function(t){return '<div class="tile"><span class="l">'+t[0]+'</span><span class="v">'+t[2]+'<small>'+t[1]+'</small></span></div>';}).join('')+'</div>';
+}
+function stateOpts(sel){ return S.states.map(function(s){ return '<option value="'+s.id+'"'+(s.id===sel?' selected':'')+'>สถานะ '+s.id+'</option>'; }).join(''); }
+function buildProcs(){
+  var h='';
+  S.procs.forEach(function(p,i){
+    h+='<div class="card proc-card" data-i="'+i+'"><div class="prochead"><h2 class="h">กระบวนการ '+(i+1)+'</h2><button class="btn danger" type="button" data-del="'+i+'">ลบ</button></div>'+
+      '<div class="pairs"><div class="field"><label for="pf-'+i+'">จาก</label><select id="pf-'+i+'" data-f="from">'+stateOpts(p.from)+'</select></div>'+
+      '<div class="field"><label for="pt-'+i+'">ถึง</label><select id="pt-'+i+'" data-f="to">'+stateOpts(p.to)+'</select></div></div>'+
+      '<div class="field"><label for="pq-'+i+'">อัตราไหลของอากาศที่สถานะต้นทาง</label><div class="inp"><input id="pq-'+i+'" data-f="flow" type="number" inputmode="decimal" step="'+(isIP()?25:50)+'" autocomplete="off"><span class="u" data-fu="1"></span></div><p class="note" data-fn="1"></p></div>'+
+      '<div class="procout" id="po-'+i+'"></div></div>';
+  });
+  if(!S.procs.length) h='<div class="empty">ยังไม่มีกระบวนการ กด “เพิ่มกระบวนการ” เพื่อเลือกสถานะต้นทางและปลายทาง</div>';
+  $('procs').innerHTML=h;
+}
+function renderLoad(X){
+  var key=S.states.map(function(s){return s.id;}).join('')+'|'+S.procs.length+'|'+S.units+'|'+S.procs.map(function(p){return p.from+p.to;}).join(',');
+  if(key!==ui.procKey){ ui.procKey=key; buildProcs(); }
+  var IP=isIP(), res=[];
+  S.procs.forEach(function(p,i){
+    var card=$('procs').children[i]; if(!card) return;
+    var r=procCalc(p,X); res.push(r);
+    setVal($('pq-'+i),showIn('flow',p.flow));
+    card.querySelector('[data-fu]').textContent=un('flow');
+    var Q=+p.flow, okF=p.flow!==''&&isFinite(Q)&&Q>0;
+    card.querySelector('[data-fn]').textContent=okF?('= '+(IP?fmt(Q,0)+' m³/h':fmt(Q*0.588577,0)+' CFM')+' · '+fmt(Q/3.6,1)+' L/s'):'';
+    $('po-'+i).innerHTML=procOutHTML(r);
+  });
+  var ok=res.filter(function(r){return !r.err;}), sum=$('load-sum');
+  if(ok.length>=2){
+    var cl=0,ht=0,wt=0,wa=0; ok.forEach(function(r){ if(r.qT<0) cl+=-r.qT; else ht+=r.qT; if(r.water>=0) wt+=r.water; else wa+=-r.water; });
+    var pd=IP?0:1;
+    sum.innerHTML='<div class="card"><h2 class="h">รวม '+ok.length+' กระบวนการ</h2><div class="tiles">'+
+      '<div class="tile"><span class="l">ทำความเย็นรวม</span><span class="v">'+fmt(toU('pow',cl),pd)+'<small>'+un('pow')+'</small></span></div>'+
+      '<div class="tile"><span class="l">คิดเป็น</span><span class="v">'+fmt(cl/3.517,2)+'<small>TR</small></span></div>'+
+      '<div class="tile"><span class="l">ให้ความร้อนรวม</span><span class="v">'+fmt(toU('pow',ht),pd)+'<small>'+un('pow')+'</small></span></div>'+
+      '<div class="tile"><span class="l">น้ำควบแน่นรวม</span><span class="v">'+fmt(toU('mh',wt),2)+'<small>'+un('mh')+'</small></span></div>'+
+      '</div><p class="note">รวมโหลดของทุกกระบวนการที่คำนวณได้ โดยนับแต่ละกระบวนการด้วยอัตราไหลของตัวเอง</p></div>';
+  } else sum.innerHTML='';
+}
+
+/* ---------- shell ---------- */
+function renderChips(){
+  var h=S.states.map(function(s){ return '<button role="tab" data-id="'+s.id+'" aria-selected="'+(s.id===S.active)+'" style="--c:'+scol(s.id)+'"><span class="dot"></span>'+s.id+'</button>'; }).join('');
+  if(S.states.length<8) h+='<button class="add" data-add="1" aria-label="เพิ่มสถานะ">＋</button>';
+  $('chips').innerHTML=h;
+}
+function renderZone(){
+  var z=getZone();
+  ['calc','chart'].forEach(function(sfx){
+    var sel=$('zs-'+sfx);
+    if(ui.zlUnits!==S.units){ sel.innerHTML='<option value="or">'+zoneOptLabel('or')+'</option><option value="pt">'+zoneOptLabel('pt')+'</option><option value="custom">กำหนดเอง</option><option value="off">ไม่ใช้เกณฑ์</option>'; }
+    sel.value=S.zone;
+    var custom=S.zone==='custom'; $('zc-'+sfx).hidden=!custom;
+    ['tmin','tmax','rmin','rmax'].forEach(function(f){ setVal($('z-'+f+'-'+sfx),showIn(f.charAt(0)==='t'?'T':null,S.custom[f])); });
+    document.querySelectorAll('#zc-'+sfx+' [data-zu]').forEach(function(u){ u.textContent=u.dataset.zu==='t'?un('t'):'%'; });
+    var e=$('ze-'+sfx); e.hidden=!(custom&&z&&z.bad); e.textContent=(z&&z.bad)||'';
+  });
+  ui.zlUnits=S.units;
+}
+function renderShell(){
+  $('pname').textContent=(PROJ[CUR]&&PROJ[CUR].name)||'ไม่มีชื่อ';
+  document.querySelectorAll('#usw button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.u===S.units)); });
+  document.querySelectorAll('#nav button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)); });
+  ['calc','chart','load','ref'].forEach(function(k){ $('v-'+k).hidden=(k!==S.tab); });
+  $('chips').hidden=(S.tab==='load'||S.tab==='ref');
+  renderChips(); renderZone();
+}
+function render(){
+  applyRange();
+  var X=ctx(); renderShell();
+  if(S.tab==='calc') renderCalc(X);
+  else if(S.tab==='chart') renderChart(X);
+  else if(S.tab==='load') renderLoad(X);
+  else renderRefImg();
+}
+
+/* ---------- state operations ---------- */
+function newId(){ for(var i=0;i<8;i++) if(!stOf(LET.charAt(i))) return LET.charAt(i); return null; }
+function addState(copy){
+  var id=newId(); if(!id) return;
+  var src=stOf(S.active)||S.states[0], ns={id:id,t:copy?src.t:25,mode:copy?src.mode:'rh',v:copy?src.v:50};
+  S.states.push(ns); S.active=id; ui.armDel=false; save(); render();
+}
+function removeState(id){
+  if(S.states.length<2) return;
+  S.states=S.states.filter(function(s){return s.id!==id;});
+  S.procs=S.procs.filter(function(p){return p.from!==id&&p.to!==id;});
+  S.active=S.states[0].id; ui.armDel=false; save(); render();
+}
+
+/* ---------- events ---------- */
+$('usw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; S.units=b.dataset.u; ui.procKey=''; save(); render(); });
+$('chips').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.add) return addState(false);
+  S.active=b.dataset.id; ui.armDel=false; save(); render();
+});
+$('nav').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; S.tab=b.dataset.tab; ui.armDel=false; save(); render(); window.scrollTo(0,0); });
+$('reads').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; S.active=b.dataset.id; save(); render(); });
+$('in-t').addEventListener('input',function(e){ stOf(S.active).t=readIn('T',e.target.value); save(); render(); });
+$('in-val').addEventListener('input',function(e){ var st=stOf(S.active); st.v=readIn(MODES[st.mode].k,e.target.value); save(); render(); });
+$('in-alt').addEventListener('input',function(e){ S.alt=readIn('len',e.target.value); save(); render(); });
+$('in-mode').addEventListener('change',function(e){
+  var st=stOf(S.active), nm=e.target.value, c=compute(st,pressure(altNum()));
+  if(!c.err){
+    var map={rh:Math.min(100,+c.rh.toFixed(1)),twb:+c.twb.toFixed(1),tdp:+(isFinite(c.tdp)?c.tdp:-60).toFixed(1),w:+(c.W*1000).toFixed(2),h:+c.h.toFixed(1)};
+    st.v=map[nm];
+  }
+  st.mode=nm; save(); render();
+});
+$('dup-state').addEventListener('click',function(){ addState(true); });
+$('del-state').addEventListener('click',function(){
+  if(S.states.length<2) return;
+  if(!ui.armDel){ ui.armDel=true; render(); setTimeout(function(){ if(ui.armDel){ ui.armDel=false; render(); } },3000); return; }
+  removeState(S.active);
+});
+document.querySelectorAll('.zsel').forEach(function(s){ s.addEventListener('change',function(){ S.zone=s.value; save(); render(); }); });
+document.querySelectorAll('.zin').forEach(function(i){ i.addEventListener('input',function(){ S.custom[i.dataset.f]=readIn(i.dataset.f.charAt(0)==='t'?'T':null,i.value); save(); render(); }); });
+
+document.querySelectorAll('.tg').forEach(function(b){ b.addEventListener('click',function(){ S.layers[b.dataset.l]=!S.layers[b.dataset.l]; save(); render(); }); });
+$('zoomsw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.zoom=+b.dataset.z; if(ui.zoom===1) ui.mode='point'; render(); });
+$('modesw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.mode=b.dataset.m; render(); });
+
+$('add-proc').addEventListener('click',function(){
+  var last=S.procs[S.procs.length-1], from=last?last.to:S.states[0].id, to=null;
+  S.states.forEach(function(s){ if(to===null&&s.id!==from) to=s.id; });
+  S.procs.push({from:from,to:to||from,flow:last?last.flow:1000}); save(); render();
+});
+$('procs').addEventListener('click',function(e){ var b=e.target.closest('[data-del]'); if(!b) return; S.procs.splice(+b.dataset.del,1); save(); render(); });
+$('procs').addEventListener('input',function(e){ var el=e.target, card=el.closest('.proc-card'); if(!card||el.dataset.f!=='flow') return; S.procs[+card.dataset.i].flow=readIn('flow',el.value); save(); render(); });
+$('procs').addEventListener('change',function(e){ var el=e.target, card=el.closest('.proc-card'); if(!card||(el.dataset.f!=='from'&&el.dataset.f!=='to')) return; S.procs[+card.dataset.i][el.dataset.f]=el.value; save(); render(); });
+
+var svg=$('chart'), drag=false;
+function setFromPointer(e){
+  var r=svg.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*VW, y=(e.clientY-r.top)/r.height*VH;
+  var t=Math.round(clamp(TMIN+(x-ML)/PW*(TMAX-TMIN),TMIN,TMAX)*10)/10;
+  var w=clamp((MT+PH-y)/PH*WMAX,0,WMAX), Ws=wFromPw(pws(t),pressure(altNum()));
+  w=Math.floor(Math.min(w,Ws)*10000)/10; // g/kg, 0.1 steps
+  var st=stOf(S.active); st.t=t; st.mode='w'; st.v=w; save(); render();
+}
+svg.addEventListener('pointerdown',function(e){ if(ui.mode==='pan'&&ui.zoom>1) return; drag=true; try{svg.setPointerCapture(e.pointerId);}catch(_){} setFromPointer(e); });
+svg.addEventListener('pointermove',function(e){ if(drag) setFromPointer(e); });
+['pointerup','pointercancel'].forEach(function(n){ svg.addEventListener(n,function(){ drag=false; }); });
+
+/* ---------- project sheet ---------- */
+function fmtDate(ts){ try{ return new Date(ts).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function refreshSheetStatus(){
+  var el=$('pj-status'); if(!el) return;
+  var t;
+  if(DBS.mode!=='sync') t='บันทึกไว้ในเครื่องนี้ ยังไม่ซิงก์ข้ามอุปกรณ์ (ต้องเปิดลิงก์ด้วยบัญชี Claude ที่เข้าสู่ระบบ)';
+  else if(DBS.err==='timeout'&&!DBS.got) t='ยังเชื่อมต่อบัญชีไม่ได้ ใช้ข้อมูลในเครื่องไปก่อน จะซิงก์เมื่อเชื่อมต่อได้';
+  else if(DBS.err&&DBS.err!=='timeout') t='ซิงก์กับบัญชีไม่สำเร็จ ('+DBS.err+') ข้อมูลยังอยู่ในเครื่องนี้';
+  else if(!DBS.got) t='กำลังเชื่อมต่อบัญชี…';
+  else t='ซิงก์กับบัญชีของคุณแล้ว เห็นเหมือนกันทุกอุปกรณ์ เป็นข้อมูลส่วนตัวของคุณ';
+  el.textContent=t;
+}
+function refreshSheet(){
+  if($('sheet').hidden) return;
+  setVal($('pj-name'),PROJ[CUR].name);
+  refreshSheetStatus();
+  var ids=Object.keys(PROJ).sort();
+  $('pj-list').innerHTML=ids.map(function(id){
+    var p=PROJ[id], d=p.data||{}, n=(d.states||[]).length, m=(d.procs||[]).length;
+    return '<button class="pj" type="button" data-pid="'+id+'" aria-pressed="'+(id===CUR)+'"><span class="pjn">'+esc(p.name||'ไม่มีชื่อ')+'</span><span class="pjm">'+n+' สถานะ · '+m+' กระบวนการ · '+(d.units==='IP'?'IP':'SI')+' · แก้ไข '+fmtDate(p.updatedAt)+'</span></button>';
+  }).join('');
+  var del=$('pj-del'); del.disabled=ids.length<2; del.textContent=ui.armPj?'แตะอีกครั้งเพื่อลบ':'ลบโปรเจกต์นี้'; del.classList.toggle('armed',ui.armPj);
+  $('fmtsw').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.f===ui.fmt)); });
+  $('cntsw').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.c===ui.cnt)); });
+  $('exp-note').textContent=ui.cnt==='full'
+    ?'รายงานเต็ม ขนาด A4: ชื่อโปรเจกต์ ตารางสถานะอากาศ กราฟ และโหลดของทุกกระบวนการ'+(ui.fmt==='jpg'?' (ถ้ามีหลายหน้า จะต่อเป็นภาพเดียวแนวตั้ง)':'')
+    :'เฉพาะกราฟ ขนาด A4: ใช้เส้น เขตเป้าหมาย และจุดสถานะตามที่เห็นในแท็บกราฟ';
+}
+function openSheet(which){
+  $('sheet').hidden=false; $('sh-proj').hidden=which!=='proj'; $('sh-exp').hidden=which!=='exp';
+  $('sh-title').textContent=which==='proj'?'โปรเจกต์':'ส่งออกไฟล์';
+  ui.armPj=false; $('exp-status').textContent=''; refreshSheet(); $('sh-x').focus();
+}
+function closeSheet(){ $('sheet').hidden=true; ui.armPj=false; }
+function switchProject(id){
+  if(!PROJ[id]) return;
+  if(id!==CUR){ CUR=id; loadInto(PROJ[id].data); ui.procKey=''; ui.armDel=false; lsWrite(); render(); window.scrollTo(0,0); }
+  closeSheet();
+}
+function newProject(dup){
+  save();
+  var id=newPid(), n=Object.keys(PROJ).length+1, src=PROJ[CUR];
+  PROJ[id]={name:dup?(src.name||'ไม่มีชื่อ')+' (สำเนา)':'โปรเจกต์ '+n,updatedAt:Date.now(),data:dup?normData(src.data):normData(blankData(S.units))};
+  markDirty(id); CUR=id; loadInto(PROJ[id].data); ui.procKey=''; ui.armDel=false; lsWrite(); render(); refreshSheet();
+  var nm=$('pj-name'); nm.focus(); nm.select();
+}
+function deleteProject(){
+  var ids=Object.keys(PROJ).sort(); if(ids.length<2) return;
+  if(!ui.armPj){ ui.armPj=true; refreshSheet(); setTimeout(function(){ if(ui.armPj){ ui.armPj=false; refreshSheet(); } },3000); return; }
+  var id=CUR; delete PROJ[id]; delete dirty[id]; if(DBS.mode==='sync'){ delQ[id]=true; flush(); }
+  CUR=Object.keys(PROJ).sort()[0]; loadInto(PROJ[CUR].data); ui.procKey=''; ui.armPj=false; ui.armDel=false; lsWrite(); render(); refreshSheet();
+}
+$('btn-proj').addEventListener('click',function(){ openSheet('proj'); });
+$('btn-exp').addEventListener('click',function(){ openSheet('exp'); });
+$('sheet').addEventListener('click',function(e){ if(e.target.closest('[data-close]')) closeSheet(); var b=e.target.closest('.pj'); if(b) switchProject(b.dataset.pid); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!$('sheet').hidden) closeSheet(); });
+$('pj-new').addEventListener('click',function(){ newProject(false); });
+$('pj-dup').addEventListener('click',function(){ newProject(true); });
+$('pj-del').addEventListener('click',deleteProject);
+$('pj-name').addEventListener('input',function(e){
+  var p=PROJ[CUR]; p.name=e.target.value; p.updatedAt=Date.now(); delete p.fresh; lsWrite(); markDirty(CUR);
+  $('pname').textContent=p.name||'ไม่มีชื่อ'; refreshSheet();
+});
+$('fmtsw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.fmt=b.dataset.f; refreshSheet(); });
+$('cntsw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.cnt=b.dataset.c; refreshSheet(); });
+
+/* ---------- export (PDF / JPG) ---------- */
+var SANS='"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif', MONO='"IBM Plex Mono",ui-monospace,monospace';
+var PC=['#087E8B','#B45309','#6D3FC0','#1F7A4F','#B4237A','#8A6D00','#2B5FD9','#5B6770'];
+var EXPORT_CSS=':root{--s0:#087E8B;--s1:#B45309;--s2:#6D3FC0;--s3:#1F7A4F;--s4:#B4237A;--s5:#8A6D00;--s6:#2B5FD9;--s7:#5B6770;--ink:#101E32;--muted:#51627A;--grid:#E4EAF2;--line:#D4DCE8;--surface:#fff;--on-pt:#fff;--hl:#B45309;--wl:#2F63B5;--vl:#7C3FA0;--zone:#2E8B63}'+
+ '.gl{stroke:var(--grid);stroke-width:1;fill:none}.gl2{stroke:var(--grid);stroke-width:.5;fill:none;opacity:.8}.plot{fill:#fff;stroke:var(--line);stroke-width:1}'+
+ '.rh{stroke:var(--muted);stroke-width:.9;fill:none;opacity:.65}.sat{stroke:var(--ink);stroke-width:1.9;fill:none}'+
+ '.hln{stroke:var(--hl);fill:none;stroke-width:.7;opacity:.9}.hln.mj{stroke-width:1}.wln{stroke:var(--wl);fill:none;stroke-width:.9;stroke-dasharray:4 2.5;opacity:.9}.vln{stroke:var(--vl);fill:none;stroke-width:.9;opacity:.85}'+
+ '.zone{fill:var(--zone);fill-opacity:.24;stroke:var(--zone);stroke-width:1.2}'+
+ '.tx{fill:var(--muted);font:10px monospace}.tx.rhl{font-size:9.5px}.tx.cap{font:9.5px sans-serif}.tx.hl{fill:var(--hl);font-size:9.5px}.tx.wl{fill:var(--wl);font-size:9.5px}.tx.vl{fill:var(--vl);font-size:9px}'+
+ '.halo{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}.guide{stroke-width:1.2;stroke-dasharray:3 3;fill:none}.proc{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 3;fill:none}'+
+ '.ptl{font:600 11px sans-serif;fill:#fff;text-anchor:middle}';
+function exportSvg(X,w,h){
+  var g=chartMarkup(X);
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+VW+' '+VH+'"><style>'+EXPORT_CSS+'</style><rect width="'+VW+'" height="'+VH+'" fill="#fff"/>'+g+'</svg>';
+}
+function loadImg(svg){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){ res(im); }; im.onerror=function(){ rej(new Error('วาดกราฟไม่สำเร็จ')); }; im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); }); }
+var PXMM=1240/210;
+function mkPage(){ var c=document.createElement('canvas'); c.width=1240; c.height=1754; var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); return {c:c,g:g}; }
+function fontOf(o){ return (o.w||400)+' '+Math.round((o.s||3.4)*PXMM)+'px '+(o.mono?MONO:SANS); }
+function TX(pg,s,x,y,o){ o=o||{}; var g=pg.g; g.font=fontOf(o); g.fillStyle=o.col||'#101E32'; g.textAlign=o.al||'left'; g.textBaseline='alphabetic'; g.fillText(String(s),x*PXMM,y*PXMM); }
+function MW(pg,s,o){ pg.g.font=fontOf(o||{}); return pg.g.measureText(String(s)).width/PXMM; }
+function FIT(pg,s,maxMm,o){ s=String(s); if(MW(pg,s,o)<=maxMm) return s; while(s.length>1&&MW(pg,s+'…',o)>maxMm) s=s.slice(0,-1); return s+'…'; }
+function LN(pg,x1,y1,x2,y2,col,w,dash){ var g=pg.g; g.strokeStyle=col||'#D4DCE8'; g.lineWidth=(w||0.25)*PXMM; g.setLineDash(dash?dash.map(function(d){return d*PXMM;}):[]); g.beginPath(); g.moveTo(x1*PXMM,y1*PXMM); g.lineTo(x2*PXMM,y2*PXMM); g.stroke(); g.setLineDash([]); }
+function RC(pg,x,y,w,h,col){ pg.g.fillStyle=col; pg.g.fillRect(x*PXMM,y*PXMM,w*PXMM,h*PXMM); }
+function CI(pg,x,y,r,col){ var g=pg.g; g.fillStyle=col; g.beginPath(); g.arc(x*PXMM,y*PXMM,r*PXMM,0,6.2832); g.fill(); }
+function p2(n){ return (n<10?'0':'')+n; }
+
+function repHeader(pg,X,sub){
+  var name=PROJ[CUR].name||'ไม่มีชื่อ', dt=new Date();
+  TX(pg,FIT(pg,name,186,{w:600,s:7.5}),12,20,{w:600,s:7.5});
+  TX(pg,(sub||'Psychrometric report')+' · '+dt.getFullYear()+'-'+p2(dt.getMonth()+1)+'-'+p2(dt.getDate())+' · หน่วย '+S.units+' · ความสูง '+fmt(toU('len',altNum()),0)+' '+un('len')+' · ความดัน '+fmt(toU('p',X.P),isIP()?3:2)+' '+un('p'),12,27,{s:3.2,col:'#51627A'});
+  LN(pg,12,31,198,31,'#101E32',0.4);
+  return 31;
+}
+function repStates(pg,X,y){
+  var IP=isIP();
+  var cols=[['Tdb',un('t'),46,'t'],['RH','%',64,'rh'],['W',un('w'),88,'W'],['h',un('h'),112,'h'],['Twb',un('t'),134,'twb'],['Tdp',un('t'),156,'tdp'],['v',un('v'),180,'v']];
+  RC(pg,12,y,186,11,'#F3F6FA');
+  TX(pg,'สถานะ',14,y+7,{w:600,s:3.1,col:'#51627A'});
+  cols.forEach(function(c){ TX(pg,c[0],c[2],y+4.6,{w:600,s:3.1,col:'#51627A',al:'right'}); TX(pg,c[1],c[2],y+9,{s:2.7,col:'#51627A',al:'right'}); });
+  TX(pg,'เกณฑ์',197,y+7,{w:600,s:3.1,col:'#51627A',al:'right'});
+  y+=11;
+  S.states.forEach(function(s){
+    var c=X.c[s.id], cy=y+6;
+    CI(pg,18,cy-1.2,2.8,PC[idx(s.id)]); TX(pg,s.id,18,cy,{w:600,s:3,col:'#fff',al:'center'});
+    if(c.err){ TX(pg,FIT(pg,c.err,150,{s:3.2}),26,cy,{s:3.2,col:'#B42318'}); }
+    else {
+      var v={t:fmt(toU('T',c.t),1),rh:fmt(c.rh,1),W:fmt(toU('W',c.W*1000),IP?1:2),h:fmt(toU('h',c.h),IP?2:1),twb:fmt(toU('T',c.twb),1),tdp:fmt(toU('T',c.tdp),1),v:fmt(toU('v',c.v),IP?3:4)};
+      cols.forEach(function(k){ TX(pg,v[k[3]],k[2],cy,{mono:true,s:3.2,al:'right'}); });
+      var zc=zoneCheck(c); if(zc&&!zc.bad) TX(pg,zc.issues.length?'นอก':'ผ่าน',197,cy,{s:3.1,w:600,al:'right',col:zc.issues.length?'#92400E':'#1F7A4F'});
+    }
+    LN(pg,12,y+8.5,198,y+8.5,'#D4DCE8',0.2); y+=8.5;
+  });
+  var z=getZone(), zl=z&&!z.bad?('เกณฑ์ห้อง: '+z.name+' '+zT(z)+' · '+zR(z)):(z&&z.bad?'เกณฑ์ห้อง: '+z.bad:'ไม่ได้เลือกเกณฑ์ห้อง');
+  TX(pg,zl,12,y+5,{s:3.1,col:'#51627A'});
+  return y+8;
+}
+function repChart(pg,img,y,maxH){
+  var h=Math.min(maxH,205), w=h*VW/VH;
+  if(w>186){ w=186; h=w*VH/VW; }
+  pg.g.drawImage(img,((210-w)/2)*PXMM,y*PXMM,w*PXMM,h*PXMM);
+  var ly=y+h+5, lx=12;
+  var items=[['RH 10–90 %','#555555','n'],['อิ่มตัว 100 %','#101E32','t']];
+  if(S.layers.h) items.push(['h '+un('h'),'#B45309','n']);
+  if(S.layers.twb) items.push(['Twb '+un('t'),'#2F63B5','d']);
+  if(S.layers.v) items.push(['v '+un('v'),'#7C3FA0','n']);
+  var z=getZone(); if(z&&!z.bad) items.push(['เขตเป้าหมาย: '+z.name,'#2E8B63','z']);
+  items.forEach(function(it){
+    if(it[2]==='z') RC(pg,lx,ly-2.8,8,3.4,'#D5E8DF'); else LN(pg,lx,ly-1.2,lx+8,ly-1.2,it[1],it[2]==='t'?0.7:0.35,it[2]==='d'?[1.6,1]:null);
+    TX(pg,it[0],lx+10,ly,{s:3}); lx+=10+MW(pg,it[0],{s:3})+6;
+  });
+  return ly+4;
+}
+function repLoads(pg,X,pages){
+  var IP=isIP(), pd=IP?0:2, y;
+  y=repHeader(pg,X,'โหลดของกระบวนการ')+7;
+  var cols=[['ต้นทาง→ปลายทาง',null,20],['อัตราไหล',un('flow'),66],['โหลดรวม',un('pow'),92],['TR','',106],['Sensible',un('pow'),128],['Latent',un('pow'),150],['SHR','',163],['น้ำ',un('mh'),190]];
+  function head(pg2,yy){
+    RC(pg2,12,yy,186,11,'#F3F6FA');
+    cols.forEach(function(c,i){ var al=i===0?'left':'right'; TX(pg2,c[0],c[2],yy+4.6,{w:600,s:3.1,col:'#51627A',al:al}); if(c[1]) TX(pg2,c[1],c[2],yy+9,{s:2.7,col:'#51627A',al:al}); });
+    return yy+11;
+  }
+  y=head(pg,y);
+  var tot={cl:0,ht:0,wt:0,n:0};
+  S.procs.forEach(function(p,i){
+    if(y>268){ pages.push(pg=mkPage()); y=repHeader(pg,X,'โหลดของกระบวนการ (ต่อ)')+7; y=head(pg,y); }
+    var r=procCalc(p,X), cy=y+5.5;
+    CI(pg,16,cy-1.2,2.6,'#101E32'); TX(pg,i+1,16,cy,{w:600,s:2.8,col:'#fff',al:'center'});
+    TX(pg,p.from+' → '+p.to,20,cy,{w:600,s:3.3});
+    if(r.err){ TX(pg,FIT(pg,r.err,150,{s:3.1}),20,cy+5,{s:3.1,col:'#B42318'}); }
+    else {
+      tot.n++; if(r.qT<0) tot.cl+=-r.qT; else tot.ht+=r.qT; if(r.water>0) tot.wt+=r.water;
+      var vals=[fmt(toU('flow',+p.flow),0),sgn(toU('pow',r.qT),pd),fmt(Math.abs(r.qT)/3.517,2),sgn(toU('pow',r.qS),pd),sgn(toU('pow',r.qL),pd),fmt(r.shr,2),fmt(toU('mh',r.water),2)];
+      vals.forEach(function(v,k){ TX(pg,v,cols[k+1][2],cy,{mono:true,s:3.1,al:'right'}); });
+      TX(pg,FIT(pg,r.name+'   Δt '+sgn(toU('dT',r.dt),1)+' '+un('t')+' · ΔW '+sgn(toU('W',r.dW),IP?1:2)+' '+un('w'),166,{s:2.9}),20,cy+4.8,{s:2.9,col:'#51627A'});
+    }
+    LN(pg,12,y+11.5,198,y+11.5,'#D4DCE8',0.2); y+=11.5;
+  });
+  if(tot.n>=2){
+    y+=5; RC(pg,12,y,186,15,'#F3F6FA');
+    TX(pg,'รวม '+tot.n+' กระบวนการ',16,y+6,{w:600,s:3.3});
+    TX(pg,'ทำความเย็นรวม '+fmt(toU('pow',tot.cl),IP?0:1)+' '+un('pow')+' ('+fmt(tot.cl/3.517,2)+' TR)   ให้ความร้อนรวม '+fmt(toU('pow',tot.ht),IP?0:1)+' '+un('pow')+'   น้ำควบแน่นรวม '+fmt(toU('mh',tot.wt),2)+' '+un('mh'),16,y+11.5,{s:3,mono:false});
+    y+=15;
+  }
+  TX(pg,'Sensible = ṁ(h_C − h_A), Latent = ṁ(h_B − h_C) โดย C คือจุด (Tdb ของปลายทาง, W ของต้นทาง)',12,y+7,{s:2.8,col:'#51627A'});
+  TX(pg,'เครื่องหมายลบ = ดึงความร้อนออก · 1 TR = 3.517 kW = 12,000 Btu/h',12,y+11,{s:2.8,col:'#51627A'});
+}
+async function renderReport(opts){
+  applyRange();
+  var X=ctx(), pages=[];
+  try{ await Promise.all([document.fonts.load('600 20px "IBM Plex Sans Thai"'),document.fonts.load('400 20px "IBM Plex Sans Thai"'),document.fonts.load('500 20px "IBM Plex Mono"')]); }catch(e){}
+  var img=await loadImg(exportSvg(X,1440,1760));
+  var p1=mkPage(); pages.push(p1);
+  var y=repHeader(p1,X,opts.content==='chart'?'Psychrometric chart':'Psychrometric report');
+  if(opts.content==='full'){
+    y=repStates(p1,X,y+4);
+    repChart(p1,img,y+2,297-y-26);
+    if(S.procs.length) { var p2g=mkPage(); pages.push(p2g); repLoads(p2g,X,pages); }
+  } else {
+    repChart(p1,img,y+6,297-y-30);
+  }
+  pages.forEach(function(pg,i){ TX(pg,'PsyChart · ASHRAE Handbook—Fundamentals ch.1 · หน้า '+(i+1)+'/'+pages.length,105,291,{s:2.8,col:'#7A8AA0',al:'center'}); });
+  return pages.map(function(p){ return p.c; });
+}
+function toBlob(c,type,q){ return new Promise(function(res,rej){ c.toBlob(function(b){ b?res(b):rej(new Error('สร้างรูปไม่สำเร็จ')); },type,q); }); }
+function makePdf(pgs){
+  var enc=new TextEncoder(), parts=[], offs=[], len=0, PWT=595.28, PHT=841.89, i;
+  function put(x){ var b=typeof x==='string'?enc.encode(x):x; parts.push(b); len+=b.length; }
+  put('%PDF-1.4\n');
+  var n=pgs.length, total=2+3*n;
+  offs[1]=len; put('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  offs[2]=len; put('2 0 obj\n<< /Type /Pages /Kids ['+pgs.map(function(_,k){return (3+3*k)+' 0 R';}).join(' ')+'] /Count '+n+' >>\nendobj\n');
+  pgs.forEach(function(p,k){
+    var po=3+3*k, io=4+3*k, co=5+3*k, cs='q '+PWT+' 0 0 '+PHT+' 0 0 cm /Im0 Do Q';
+    offs[po]=len; put(po+' 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PWT+' '+PHT+'] /Resources << /XObject << /Im0 '+io+' 0 R >> >> /Contents '+co+' 0 R >>\nendobj\n');
+    offs[io]=len; put(io+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+p.w+' /Height '+p.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+p.jpg.length+' >>\nstream\n'); put(p.jpg); put('\nendstream\nendobj\n');
+    offs[co]=len; put(co+' 0 obj\n<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream\nendobj\n');
+  });
+  var xr=len, x='xref\n0 '+(total+1)+'\n0000000000 65535 f \n';
+  for(i=1;i<=total;i++) x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  put(x+'trailer\n<< /Size '+(total+1)+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');
+  var out=new Uint8Array(len), o=0; parts.forEach(function(b){ out.set(b,o); o+=b.length; }); return out;
+}
+var dlP=null;
+function getDl(){ if(!dlP) dlP=(async function(){ try{ if(window.claude&&window.claude.use) return await window.claude.use('downloads'); }catch(e){} return null; })(); return dlP; }
+function safeName(s){ s=String(s||'').replace(/[^\w฀-๿.\- ]+/g,'_').replace(/\s+/g,' ').trim().slice(0,60); return s||'project'; }
+function dlError(e){ var c=e&&e.code; if(c==='declined') return 'ยกเลิกการบันทึก'; if(c==='too_large') return 'ไฟล์ใหญ่เกินไป ลองเลือกเฉพาะกราฟ'; if(c==='unavailable'||c==='not_granted'||c==='capability_disabled'||c==='capability_removed') return 'มุมมองนี้บันทึกไฟล์ไม่ได้ ลองเปิดลิงก์ในแอป Claude หรือเบราว์เซอร์'; return 'สร้างไฟล์ไม่สำเร็จ'+(e&&e.message?' ('+e.message+')':''); }
+async function doExport(){
+  var st=$('exp-status'), btn=$('exp-go'); btn.disabled=true; st.textContent='กำลังสร้างไฟล์…';
+  try{
+    var dl=await getDl(); if(!dl){ st.textContent='มุมมองนี้บันทึกไฟล์ไม่ได้ ลองเปิดลิงก์ในแอป Claude หรือเบราว์เซอร์'; return; }
+    var cvs=await renderReport({content:ui.cnt}), data, ext, k;
+    if(ui.fmt==='pdf'){
+      var jp=[]; for(k=0;k<cvs.length;k++){ var b=await toBlob(cvs[k],'image/jpeg',0.9); jp.push({jpg:new Uint8Array(await b.arrayBuffer()),w:cvs[k].width,h:cvs[k].height}); }
+      data=makePdf(jp); ext='pdf';
+    } else {
+      var all=cvs[0];
+      if(cvs.length>1){ all=document.createElement('canvas'); all.width=cvs[0].width; all.height=cvs[0].height*cvs.length; var g=all.getContext('2d'); cvs.forEach(function(c,i){ g.drawImage(c,0,i*c.height); }); }
+      data=await toBlob(all,'image/jpeg',0.92); ext='jpg';
+    }
+    var fname=safeName(PROJ[CUR].name)+'_psychrometric'+(ui.cnt==='chart'?'_chart':'')+'.'+ext;
+    await dl.save({filename:fname,data:data});
+    st.textContent='บันทึกแล้ว: '+fname;
+  }catch(e){ st.textContent=dlError(e); }
+  finally{ btn.disabled=false; }
+}
+$('exp-go').addEventListener('click',doExport);
+
+/* ---------- sea-level chart images (reference tab) ---------- */
+var IMGF={SI:'charts/psychrometric_chart_SI_sea_level',IP:'charts/psychrometric_chart_IP_sea_level'};
+function renderRefImg(){
+  var d=$('ref-img'); if(S.tab!=='ref'||!d.open) return;
+  var src=IMGF[ui.img]+'.png', im=$('refimg');
+  if(im.getAttribute('src')!==src) im.setAttribute('src',src);
+  im.style.width=(ui.imgz*100)+'%';
+  $('imgsw').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.i===ui.img)); });
+  $('imgz').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(+b.dataset.z===ui.imgz)); });
+}
+$('ref-img').addEventListener('toggle',renderRefImg);
+$('imgsw').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.img=b.dataset.i; renderRefImg(); });
+$('imgz').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; ui.imgz=+b.dataset.z; renderRefImg(); });
+async function saveRefFile(ext){
+  var st=$('img-status'); st.textContent='กำลังเตรียมไฟล์…';
+  try{
+    var dl=await getDl(); if(!dl){ st.textContent='มุมมองนี้บันทึกไฟล์ไม่ได้ ลองเปิดลิงก์ในแอป Claude หรือเบราว์เซอร์'; return; }
+    var path=IMGF[ui.img]+'.'+ext, r=await fetch(path); if(!r.ok) throw new Error('โหลดไฟล์ไม่ได้');
+    var blob=await r.blob(), name=path.split('/').pop();
+    await dl.save({filename:name,data:blob}); st.textContent='บันทึกแล้ว: '+name;
+  }catch(e){ st.textContent=dlError(e); }
+}
+$('dl-png').addEventListener('click',function(){ saveRefFile('png'); });
+$('dl-pdf').addEventListener('click',function(){ saveRefFile('pdf'); });
+
+render();
+initDb();
+})();
+</script>
+
+</body></html>
