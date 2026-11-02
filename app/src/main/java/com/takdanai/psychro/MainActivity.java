@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("*/*");
                 try {
-                    startActivityForResult(Intent.createChooser(i, "เลือกไฟล์โปรเจกต์ .xls"), REQ_FILE);
+                    startActivityForResult(Intent.createChooser(i, "เลือกไฟล์โปรเจกต์ (.xlsx)"), REQ_FILE);
                 } catch (Exception e) {
                     filePathCb = null;
                     return false;
@@ -173,6 +173,7 @@ public class MainActivity extends Activity {
         n = n.toLowerCase();
         if (n.endsWith(".pdf")) return "application/pdf";
         if (n.endsWith(".png")) return "image/png";
+        if (n.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         if (n.endsWith(".xls")) return "application/vnd.ms-excel";
         if (n.endsWith(".csv")) return "text/csv";
         if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";

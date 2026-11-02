@@ -170,10 +170,9 @@ svg#chart.pan{touch-action:auto;cursor:grab}
 .pbtn{flex:1;min-width:0;display:grid;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:4px 12px;min-height:46px}
 .pbtn .pcap{font-size:11px;color:var(--muted);line-height:1.3}
 .pbtn .pname{font-size:15px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chiprow{display:flex;gap:8px;align-items:center}
-.chiprow .chips{flex:1;min-width:0}
-.hbtns{display:flex;gap:6px;flex:none;margin-left:auto}
-.ibtn.sm{width:42px;height:42px}
+.hbtns{display:flex;gap:8px;justify-content:flex-end}
+.ibtn.sm{width:48px;height:34px;border-radius:10px}
+.ibtn.sm svg{width:19px;height:19px}
 .ibtn:disabled{opacity:.32}
 .ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tools-h{margin:8px 2px 0;font-size:15px;font-weight:600}
@@ -267,8 +266,8 @@ details.ref ul{margin:0;padding-left:20px;display:grid;gap:4px}
     <div class="seg" id="usw" role="tablist" aria-label="หน่วย"><button role="tab" data-u="SI" aria-selected="true">SI</button><button role="tab" data-u="IP" aria-selected="false">IP</button></div>
     <button class="ibtn" id="btn-exp" type="button" aria-label="ส่งออกไฟล์ PDF หรือ JPG" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button>
   </div>
-  <div class="chiprow"><div class="chips" id="chips" role="tablist" aria-label="สถานะอากาศ"></div>
-    <div class="hbtns"><button class="ibtn sm" id="btn-undo" type="button" aria-label="ย้อนกลับ" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button class="ibtn sm" id="btn-redo" type="button" aria-label="ไปข้างหน้า" disabled><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div></div>
+  <div class="chips" id="chips" role="tablist" aria-label="สถานะอากาศ"></div>
+    <div class="hbtns"><button class="ibtn sm" id="btn-undo" type="button" aria-label="ย้อนกลับ" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button class="ibtn sm" id="btn-redo" type="button" aria-label="ไปข้างหน้า" disabled><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div>
 </header>
 
 <main>
@@ -559,14 +558,14 @@ SHR = |Qs| / |Q|
         <button class="btn danger" id="pj-del" type="button">ลบโปรเจกต์นี้</button>
       </div>
       <div class="pjlist" id="pj-list"></div>
-      <h3 class="h" style="margin-top:6px">ไฟล์ .xls</h3>
-      <p class="note">บันทึกโปรเจกต์นี้เป็นไฟล์ .xls ไว้ในโฟลเดอร์ Downloads/Psychrometric (ที่เดียวกับรายงาน PDF/JPG) และเปิดไฟล์ที่เคยบันทึกกลับมาเป็นโปรเจกต์ใหม่ได้</p>
+      <h3 class="h" style="margin-top:6px">ไฟล์ Excel (.xlsx)</h3>
+      <p class="note">บันทึกโปรเจกต์นี้เป็นไฟล์ Excel (.xlsx) ไว้ในโฟลเดอร์ Downloads/Psychrometric (ที่เดียวกับรายงาน PDF/JPG) และเปิดไฟล์ที่เคยบันทึกกลับมาเป็นโปรเจกต์ใหม่ได้ (ไฟล์ .xls รุ่นเก่าของแอปนี้ก็ยังเปิดได้)</p>
       <div class="btns">
-        <button class="btn pri" id="xls-save" type="button">บันทึกเป็น .xls</button>
-        <button class="btn" id="xls-open" type="button">เปิดไฟล์ .xls</button>
-        <button class="btn" id="xls-share" type="button">แชร์ .xls</button>
+        <button class="btn pri" id="xls-save" type="button">บันทึกเป็น .xlsx</button>
+        <button class="btn" id="xls-open" type="button">เปิดไฟล์ .xlsx</button>
+        <button class="btn" id="xls-share" type="button">แชร์ .xlsx</button>
       </div>
-      <input id="xls-file" type="file" accept=".xls,.xml,application/vnd.ms-excel,text/xml,*/*" hidden>
+      <input id="xls-file" type="file" accept=".xlsx,.xls,.xml,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/xml,*/*" hidden>
       <p class="note" id="xls-status" role="status"></p>
     </div>
     <div class="view" id="sh-exp" hidden>
@@ -700,11 +699,12 @@ var ui={zoom:1,mode:'point',armDel:false,armPj:false,procKey:'',zlUnits:null,img
 var dirty={}, delQ={}, flushT=null, flushing=false;
 function lsWrite(){ try{ localStorage.setItem(LSK,JSON.stringify({cur:CUR,tab:S.tab,projects:PROJ,synced:SYNCED})); }catch(e){} }
 var HIST={}, histApplying=false;
+function histSig(d){ return JSON.stringify([d.units,d.zone,(d.states||[]).map(function(x){return x.id;}),(d.procs||[]).length]); }
 function H(){ return HIST[CUR]||(HIST[CUR]={u:[],r:[],t:0}); }
 function save(){
   var p=PROJ[CUR], d=projData();
   if(JSON.stringify(d)!==JSON.stringify(p.data)){
-    if(!histApplying){ var h=H(), now=Date.now(); if(!h.u.length||now-h.t>700){ h.u.push(p.data); if(h.u.length>80) h.u.shift(); } h.r=[]; h.t=now; }
+    if(!histApplying){ var h=H(), now=Date.now(); if(!h.u.length||now-h.t>700||histSig(p.data)!==histSig(d)){ h.u.push(p.data); if(h.u.length>80) h.u.shift(); } h.r=[]; h.t=now; }
     p.data=d; p.updatedAt=Date.now(); delete p.fresh; markDirty(CUR);
   }
   lsWrite(); updHist();
@@ -1107,7 +1107,7 @@ function renderShell(){
   document.querySelectorAll('#usw button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.u===S.units)); });
   document.querySelectorAll('#nav button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)); });
   ['calc','chart','load','ref'].forEach(function(k){ $('v-'+k).hidden=(k!==S.tab); });
-  $('chips').style.visibility=(S.tab==='load'||S.tab==='ref')?'hidden':'visible'; updHist();
+  $('chips').hidden=(S.tab==='load'||S.tab==='ref'); updHist();
   renderChips(); renderZone();
 }
 function render(){
@@ -1457,11 +1457,40 @@ $('dl-pdf').addEventListener('click',function(){ saveRefFile('pdf'); });
 $('btn-undo').addEventListener('click',function(){ stepHist(-1); });
 $('btn-redo').addEventListener('click',function(){ stepHist(1); });
 
-/* ---------- project <-> .xls (SpreadsheetML 2003; full project JSON kept in a hidden sheet) ---------- */
+/* ---------- project <-> .xlsx (zip of SpreadsheetML; full project JSON kept in a hidden sheet) ---------- */
 function xe(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,''); }
-function xS(v,st){ return '<Cell'+(st?' ss:StyleID="'+st+'"':'')+'><Data ss:Type="String">'+xe(v)+'</Data></Cell>'; }
-function xN(v,d){ return (typeof v==='number'&&isFinite(v))?'<Cell><Data ss:Type="Number">'+(+v.toFixed(d))+'</Data></Cell>':xS('—'); }
-function xR(c){ return '<Row>'+c.join('')+'</Row>'; }
+function xS(v,st){ return {s:String(v==null?'':v),st:st||''}; }
+function xN(v,d){ return (typeof v==='number'&&isFinite(v))?{n:+v.toFixed(d)}:{s:'—'}; }
+function xR(c){ return c; }
+var XST={h:1,t:2};
+function colL(i){ var s='',m; i++; while(i>0){ m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; }
+function sheetXml(rows,widths){
+  var x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+  if(widths) x+='<cols>'+widths.map(function(w,i){ return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+(w/6.5).toFixed(1)+'" customWidth="1"/>'; }).join('')+'</cols>';
+  return x+'<sheetData>'+rows.map(function(r,ri){
+    return '<row r="'+(ri+1)+'">'+r.map(function(c,ci){
+      var ref=colL(ci)+(ri+1), st=c.st?' s="'+XST[c.st]+'"':'';
+      if(c.n!==undefined) return '<c r="'+ref+'"'+st+'><v>'+c.n+'</v></c>';
+      return '<c r="'+ref+'"'+st+' t="inlineStr"><is><t xml:space="preserve">'+xe(c.s)+'</t></is></c>';
+    }).join('')+'</row>';
+  }).join('')+'</sheetData></worksheet>';
+}
+var CRC_T=null;
+function crc32(u){ if(!CRC_T){ CRC_T=new Uint32Array(256); for(var n=0,c,k;n<256;n++){ c=n; for(k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; CRC_T[n]=c>>>0; } } var c2=0xFFFFFFFF; for(var i=0;i<u.length;i++) c2=CRC_T[(c2^u[i])&255]^(c2>>>8); return (c2^0xFFFFFFFF)>>>0; }
+function zipStore(files){
+  var enc=new TextEncoder(), parts=[], cen=[], off=0, total=0;
+  files.forEach(function(f){
+    var nm=enc.encode(f[0]), d=enc.encode(f[1]), crc=crc32(d), lh=new DataView(new ArrayBuffer(30)), ch=new DataView(new ArrayBuffer(46));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(12,0x21,true); lh.setUint32(14,crc,true); lh.setUint32(18,d.length,true); lh.setUint32(22,d.length,true); lh.setUint16(26,nm.length,true);
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(14,0x21,true); ch.setUint32(16,crc,true); ch.setUint32(20,d.length,true); ch.setUint32(24,d.length,true); ch.setUint16(28,nm.length,true); ch.setUint32(42,off,true);
+    parts.push(new Uint8Array(lh.buffer),nm,d); cen.push(new Uint8Array(ch.buffer),nm);
+    off+=30+nm.length+d.length;
+  });
+  var csz=0; cen.forEach(function(c){ csz+=c.length; });
+  var eo=new DataView(new ArrayBuffer(22)); eo.setUint32(0,0x06054b50,true); eo.setUint16(8,files.length,true); eo.setUint16(10,files.length,true); eo.setUint32(12,csz,true); eo.setUint32(16,off,true);
+  var all=parts.concat(cen,[new Uint8Array(eo.buffer)]); all.forEach(function(a){ total+=a.length; });
+  var out=new Uint8Array(total), o=0; all.forEach(function(a){ out.set(a,o); o+=a.length; }); return out;
+}
 function buildXls(){
   save(); applyRange();
   var X=ctx(), IP=isIP(), pj=PROJ[CUR], name=pj.name||'ไม่มีชื่อ', dt=new Date();
@@ -1484,33 +1513,75 @@ function buildXls(){
   r2.push(xR([])); r2.push(xR([xS('ค่าลบ = ดึงความร้อนออก · 1 TR = 3.517 kW')]));
   var json=JSON.stringify({app:'PsyChart',v:1,name:name,data:projData()}), r3=[xR([xS('PsyChart project v1')])];
   for(var i=0;i<json.length;i+=6000) r3.push(xR([xS(json.slice(i,i+6000))]));
-  function cols(w){ return w.map(function(x){ return '<Column ss:Width="'+x+'"/>'; }).join(''); }
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n'+
-  '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+
-  '<Styles><Style ss:ID="h"><Font ss:Bold="1"/><Interior ss:Color="#E4EAF2" ss:Pattern="Solid"/></Style><Style ss:ID="t"><Font ss:Bold="1" ss:Size="14"/></Style></Styles>'+
-  '<Worksheet ss:Name="สรุป"><Table>'+cols([190,90,70,90,80,80,80,80,60])+r1.join('')+'</Table></Worksheet>'+
-  '<Worksheet ss:Name="กระบวนการ"><Table>'+cols([30,60,60,110,110,60,110,110,60,120])+r2.join('')+'</Table></Worksheet>'+
-  '<Worksheet ss:Name="_PSYCHRO_DATA"><Table>'+r3.join('')+'</Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><Visible>SheetHidden</Visible></WorksheetOptions></Worksheet></Workbook>';
+  var NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"', H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n', RT='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  var WS='application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml';
+  return zipStore([
+    ['[Content_Types].xml',H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="'+WS+'"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="'+WS+'"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="'+WS+'"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+    ['_rels/.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+RT+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',H+'<workbook '+NS+' xmlns:r="'+RT+'"><sheets><sheet name="สรุป" sheetId="1" r:id="rId1"/><sheet name="กระบวนการ" sheetId="2" r:id="rId2"/><sheet name="_PSYCHRO_DATA" sheetId="3" state="hidden" r:id="rId3"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+RT+'/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="'+RT+'/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="'+RT+'/worksheet" Target="worksheets/sheet3.xml"/><Relationship Id="rId4" Type="'+RT+'/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml',H+'<styleSheet '+NS+'><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE4EAF2"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
+    ['xl/worksheets/sheet1.xml',sheetXml(r1,[190,90,70,90,80,80,80,80,60])],
+    ['xl/worksheets/sheet2.xml',sheetXml(r2,[30,60,60,110,110,60,110,110,60,120])],
+    ['xl/worksheets/sheet3.xml',sheetXml(r3,[60])]
+  ]);
 }
+var XLSX_MIME='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 async function saveXls(){
   var st=$('xls-status'); st.textContent='กำลังสร้างไฟล์…';
   try{
     var dl=await getDl(); if(!dl){ st.textContent='มุมมองนี้บันทึกไฟล์ไม่ได้'; return; }
-    var fname=safeName(PROJ[CUR].name)+'.xls';
-    await dl.save({filename:fname,data:new Blob([buildXls()],{type:'application/vnd.ms-excel'})});
+    var fname=safeName(PROJ[CUR].name)+'.xlsx';
+    await dl.save({filename:fname,data:new Blob([buildXls()],{type:XLSX_MIME})});
     st.textContent='บันทึกแล้ว: '+fname;
   }catch(e){ st.textContent=dlError(e); }
+}
+async function unzip(buf){
+  var u=new Uint8Array(buf), dv=new DataView(buf), i, eo=-1, dec=new TextDecoder(), out={};
+  for(i=u.length-22;i>=Math.max(0,u.length-65558);i--) if(dv.getUint32(i,true)===0x06054b50){ eo=i; break; }
+  if(eo<0) throw new Error('ไม่ใช่ไฟล์ .xlsx');
+  var n=dv.getUint16(eo+10,true), p=dv.getUint32(eo+16,true);
+  for(i=0;i<n;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) throw new Error('ไฟล์ .xlsx เสียหาย');
+    var method=dv.getUint16(p+10,true), csz=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lo=dv.getUint32(p+42,true);
+    var name=dec.decode(u.subarray(p+46,p+46+nl)); p+=46+nl+el+cl;
+    if(!/\.(xml|rels)$/.test(name)) continue;
+    var st=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true), raw=u.subarray(st,st+csz), data;
+    if(method===0) data=raw;
+    else if(method===8){ if(typeof DecompressionStream==='undefined') throw new Error('เครื่องนี้ยังอ่านไฟล์ที่ถูกบีบอัดไม่ได้ ให้ใช้ไฟล์ที่บันทึกจาก PsyChart โดยตรง'); data=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); }
+    else continue;
+    out[name]=dec.decode(data);
+  }
+  return out;
+}
+function xmlDoc(t){ var d=new DOMParser().parseFromString(t,'application/xml'); if(d.getElementsByTagName('parsererror').length) throw new Error('อ่านไฟล์ไม่ได้'); return d; }
+async function readXlsxCells(buf){
+  var z=await unzip(buf); if(!z['xl/workbook.xml']||!z['xl/_rels/workbook.xml.rels']) throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
+  var wb=xmlDoc(z['xl/workbook.xml']), rel=xmlDoc(z['xl/_rels/workbook.xml.rels']), rid=null, tgt=null, RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  [].slice.call(wb.getElementsByTagName('sheet')).forEach(function(s){ if(s.getAttribute('name')==='_PSYCHRO_DATA') rid=s.getAttribute('r:id')||s.getAttributeNS(RN,'id'); });
+  if(!rid) throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
+  [].slice.call(rel.getElementsByTagName('Relationship')).forEach(function(r){ if(r.getAttribute('Id')===rid) tgt=r.getAttribute('Target'); });
+  var path=tgt?(tgt.charAt(0)==='/'?tgt.slice(1):'xl/'+tgt):null; if(!path||!z[path]) throw new Error('ไม่พบข้อมูลโปรเจกต์ในไฟล์');
+  var ss=[]; if(z['xl/sharedStrings.xml']) [].slice.call(xmlDoc(z['xl/sharedStrings.xml']).getElementsByTagName('si')).forEach(function(si){ ss.push([].slice.call(si.getElementsByTagName('t')).map(function(t){ return t.textContent; }).join('')); });
+  return [].slice.call(xmlDoc(z[path]).getElementsByTagName('c')).map(function(c){
+    var t=c.getAttribute('t');
+    if(t==='inlineStr') return [].slice.call(c.getElementsByTagName('t')).map(function(x){ return x.textContent; }).join('');
+    var v=c.getElementsByTagName('v')[0], val=v?v.textContent:''; return t==='s'?(ss[+val]||''):val;
+  });
 }
 async function openXls(file){
   var st=$('xls-status');
   try{
-    var txt=await file.text(); if(txt.charCodeAt(0)===0xFEFF) txt=txt.slice(1);
-    var doc=new DOMParser().parseFromString(txt,'application/xml');
-    if(doc.getElementsByTagName('parsererror').length) throw new Error('อ่านไฟล์ไม่ได้');
-    var ws=[].slice.call(doc.getElementsByTagName('Worksheet')), data=null;
-    ws.forEach(function(w){ if((w.getAttribute('ss:Name')||w.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Name'))==='_PSYCHRO_DATA') data=w; });
-    if(!data) throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
-    var cells=[].slice.call(data.getElementsByTagName('Data')).map(function(d){ return d.textContent; });
+    var head=new Uint8Array(await file.slice(0,4).arrayBuffer()), cells;
+    if(head[0]===0x50&&head[1]===0x4B) cells=await readXlsxCells(await file.arrayBuffer());
+    else if(head[0]===0xD0&&head[1]===0xCF) throw new Error('ไฟล์ .xls รุ่นเก่าของ Excel เปิดไม่ได้ ให้เปิดใน Excel แล้ว Save As เป็น .xlsx');
+    else {
+      var txt=await file.text(); if(txt.charCodeAt(0)===0xFEFF) txt=txt.slice(1);
+      var doc=xmlDoc(txt), data=null;
+      [].slice.call(doc.getElementsByTagName('Worksheet')).forEach(function(w){ if((w.getAttribute('ss:Name')||w.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Name'))==='_PSYCHRO_DATA') data=w; });
+      if(!data) throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
+      cells=[].slice.call(data.getElementsByTagName('Data')).map(function(d){ return d.textContent; });
+    }
     if(cells[0]!=='PsyChart project v1') throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
     var obj=JSON.parse(cells.slice(1).join(''));
     if(!obj||!obj.data||!Array.isArray(obj.data.states)) throw new Error('ข้อมูลในไฟล์ไม่ครบ');
@@ -1551,7 +1622,7 @@ function buildCsv(){
 $('xls-share').addEventListener('click',async function(){
   var st=$('xls-status'); st.textContent='กำลังสร้างไฟล์…';
   try{ var dl=await getDl(); if(!dl||!dl.share){ st.textContent='แชร์ไม่ได้ในมุมมองนี้'; return; }
-    var fname=safeName(PROJ[CUR].name)+'.xls'; await dl.share({filename:fname,data:new Blob([buildXls()],{type:'application/vnd.ms-excel'})}); st.textContent='ส่งไปยังหน้าต่างแชร์แล้ว: '+fname;
+    var fname=safeName(PROJ[CUR].name)+'.xlsx'; await dl.share({filename:fname,data:new Blob([buildXls()],{type:XLSX_MIME})}); st.textContent='ส่งไปยังหน้าต่างแชร์แล้ว: '+fname;
   }catch(e){ st.textContent=dlError(e); }
 });
 

@@ -1,7 +1,7 @@
 # PsyChart – โปรเจกต์ Android
 
 แอปทำงานออฟไลน์ทั้งหมด (WebView + ไฟล์ในแอป) ข้อมูลโปรเจกต์เก็บในเครื่อง
-PDF/JPG/PNG ที่ส่งออกจะบันทึกที่ `Downloads/Psychrometric/` (ต้องใช้ Android 10 ขึ้นไป)
+PDF/JPG/CSV/XLSX ที่ส่งออกจะบันทึกที่ `Downloads/Psychrometric/` (ต้องใช้ Android 10 ขึ้นไป)
 
 ## วิธีสร้าง APK ด้วย GitHub (ไม่ต้องลงโปรแกรมอะไร)
 1. สมัคร/ล็อกอิน github.com → New repository (ตั้งเป็น Private ได้)
