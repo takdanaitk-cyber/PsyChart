@@ -1,6 +1,9 @@
 package com.takdanai.psychro;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
@@ -18,10 +21,15 @@ import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
+import androidx.core.content.FileProvider;
 
 public class MainActivity extends Activity {
     private WebView web;
+    private ValueCallback<Uri[]> filePathCb;
+    private static final int REQ_FILE = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +61,40 @@ public class MainActivity extends Activity {
                 return !"appassets.androidplatform.net".equals(r.getUrl().getHost());
             }
         });
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams params) {
+                if (filePathCb != null) filePathCb.onReceiveValue(null);
+                filePathCb = cb;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                try {
+                    startActivityForResult(Intent.createChooser(i, "เลือกไฟล์โปรเจกต์ .xls"), REQ_FILE);
+                } catch (Exception e) {
+                    filePathCb = null;
+                    return false;
+                }
+                return true;
+            }
+        });
         web.addJavascriptInterface(new Bridge(), "AndroidBridge");
 
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
         } else {
             web.loadUrl("https://appassets.androidplatform.net/index.html");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req == REQ_FILE && filePathCb != null) {
+            Uri[] r = null;
+            if (res == RESULT_OK && data != null) r = WebChromeClient.FileChooserParams.parseResult(res, data);
+            filePathCb.onReceiveValue(r);
+            filePathCb = null;
         }
     }
 
@@ -104,12 +140,41 @@ public class MainActivity extends Activity {
                 return "บันทึกไม่สำเร็จ: " + e.getMessage();
             }
         }
+
+        @JavascriptInterface
+        public String shareFile(final String filename, final String base64) {
+            try {
+                byte[] data = Base64.decode(base64, Base64.DEFAULT);
+                final String name = filename.replaceAll("[\\\\/:*?\"<>|]", "_");
+                File dir = new File(getCacheDir(), "share");
+                if (!dir.exists()) dir.mkdirs();
+                final File f = new File(dir, name);
+                try (FileOutputStream o = new FileOutputStream(f)) { o.write(data); }
+                final Uri uri = FileProvider.getUriForFile(MainActivity.this, "com.takdanai.psychro.files", f);
+                final String mime = mimeOf(name);
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Intent i = new Intent(Intent.ACTION_SEND);
+                        i.setType(mime);
+                        i.putExtra(Intent.EXTRA_STREAM, uri);
+                        i.putExtra(Intent.EXTRA_SUBJECT, name);
+                        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(Intent.createChooser(i, "แชร์ " + name));
+                    }
+                });
+                return "ok";
+            } catch (Exception e) {
+                return "แชร์ไม่สำเร็จ: " + e.getMessage();
+            }
+        }
     }
 
     private static String mimeOf(String n) {
         n = n.toLowerCase();
         if (n.endsWith(".pdf")) return "application/pdf";
         if (n.endsWith(".png")) return "image/png";
+        if (n.endsWith(".xls")) return "application/vnd.ms-excel";
+        if (n.endsWith(".csv")) return "text/csv";
         if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
         return "application/octet-stream";
     }

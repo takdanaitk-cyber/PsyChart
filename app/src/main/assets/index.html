@@ -170,6 +170,17 @@ svg#chart.pan{touch-action:auto;cursor:grab}
 .pbtn{flex:1;min-width:0;display:grid;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:4px 12px;min-height:46px}
 .pbtn .pcap{font-size:11px;color:var(--muted);line-height:1.3}
 .pbtn .pname{font-size:15px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chiprow{display:flex;gap:8px;align-items:center}
+.chiprow .chips{flex:1;min-width:0}
+.hbtns{display:flex;gap:6px;flex:none;margin-left:auto}
+.ibtn.sm{width:42px;height:42px}
+.ibtn:disabled{opacity:.32}
+.ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tools-h{margin:8px 2px 0;font-size:15px;font-weight:600}
+.toolcard .tiles{margin-top:4px}
+.toolcard .btns{margin-top:4px}
+.toolcard .btn[disabled]{opacity:.45}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:9;background:#101E32;color:#F3F6FA;border:1px solid #2E4A6E;border-radius:999px;padding:8px 16px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.25);max-width:88vw;text-align:center}
 .ibtn{flex:none;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
 .ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
@@ -225,7 +236,16 @@ details.ref ul{margin:0;padding-left:20px;display:grid;gap:4px}
   function b64(blob){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1]||'');};r.onerror=function(){rej(new Error('read'));};r.readAsDataURL(blob);});}
   window.claude={use:function(n){
     if(n!=='downloads') return Promise.resolve(null);
-    return Promise.resolve({save:async function(o){
+    return Promise.resolve({share:async function(o){
+      var blob=(o.data instanceof Blob)?o.data:new Blob([o.data]);
+      if(window.AndroidBridge&&window.AndroidBridge.shareFile){
+        var ok=window.AndroidBridge.shareFile(o.filename,await b64(blob));
+        if(ok!=='ok'){ var e=new Error(ok); e.code='bad_request'; throw e; }
+        return {status:'delivered'};
+      }
+      try{ var f=new File([blob],o.filename,{type:blob.type||'application/octet-stream'}); if(navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:o.filename}); return {status:'delivered'}; } }catch(x){ if(x&&x.name==='AbortError'){ var e2=new Error('ยกเลิก'); e2.code='declined'; throw e2; } }
+      return this.save(o);
+    },save:async function(o){
       var blob=(o.data instanceof Blob)?o.data:new Blob([o.data]);
       if(window.AndroidBridge&&window.AndroidBridge.saveFile){
         var ok=window.AndroidBridge.saveFile(o.filename,await b64(blob));
@@ -247,7 +267,8 @@ details.ref ul{margin:0;padding-left:20px;display:grid;gap:4px}
     <div class="seg" id="usw" role="tablist" aria-label="หน่วย"><button role="tab" data-u="SI" aria-selected="true">SI</button><button role="tab" data-u="IP" aria-selected="false">IP</button></div>
     <button class="ibtn" id="btn-exp" type="button" aria-label="ส่งออกไฟล์ PDF หรือ JPG" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 19h14"/></svg></button>
   </div>
-  <div class="chips" id="chips" role="tablist" aria-label="สถานะอากาศ"></div>
+  <div class="chiprow"><div class="chips" id="chips" role="tablist" aria-label="สถานะอากาศ"></div>
+    <div class="hbtns"><button class="ibtn sm" id="btn-undo" type="button" aria-label="ย้อนกลับ" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button class="ibtn sm" id="btn-redo" type="button" aria-label="ไปข้างหน้า" disabled><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button></div></div>
 </header>
 
 <main>
@@ -330,6 +351,41 @@ details.ref ul{margin:0;padding-left:20px;display:grid;gap:4px}
   <div id="procs" class="view"></div>
   <button class="btn pri" id="add-proc" type="button">＋ เพิ่มกระบวนการ</button>
   <p class="note">แต่ละกระบวนการคือการเปลี่ยนอากาศจากสถานะต้นทางไปปลายทาง เช่น คอยล์เย็น ฮีตเตอร์ หรือเครื่องทำความชื้น ใส่ได้หลายกระบวนการต่อเนื่องกัน</p>
+
+  <h2 class="tools-h">เครื่องมือเพิ่มเติม</h2>
+  <div id="tools" class="view">
+    <div class="card toolcard" id="tool-mix">
+      <h2 class="h">1 · ผสมอากาศ (Mixing)</h2>
+      <div class="pairs"><div class="field"><label for="mx-a">อากาศชุดที่ 1</label><select id="mx-a" data-g="mix" data-f="a"></select></div>
+      <div class="field"><label for="mx-b">อากาศชุดที่ 2</label><select id="mx-b" data-g="mix" data-f="b"></select></div></div>
+      <div class="pairs"><div class="field"><label for="mx-qa">อัตราไหลชุดที่ 1</label><div class="inp"><input id="mx-qa" data-g="mix" data-f="qa" data-k="flow" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="flow"></span></div></div>
+      <div class="field"><label for="mx-qb">อัตราไหลชุดที่ 2</label><div class="inp"><input id="mx-qb" data-g="mix" data-f="qb" data-k="flow" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="flow"></span></div></div></div>
+      <div id="mx-out"></div>
+      <div class="btns"><button class="btn pri" id="mx-add" type="button">สร้างจุดผสมเป็นสถานะใหม่</button></div>
+      <p class="note">คิดสมดุลมวลอากาศแห้ง ถ่วงน้ำหนักด้วยมวล (อัตราไหลที่แต่ละสถานะ ÷ v) แล้วหาอุณหภูมิจากเอนทัลปีและความชื้นจำเพาะ</p>
+    </div>
+    <div class="card toolcard" id="tool-coil">
+      <h2 class="h">2 · สถานะหลังคอยล์เย็น (ADP / BF)</h2>
+      <div class="field"><label for="cl-from">อากาศเข้าคอยล์</label><select id="cl-from" data-g="coil" data-f="from"></select></div>
+      <div class="pairs"><div class="field"><label for="cl-tadp">ADP อุณหภูมิผิวคอยล์ (อิ่มตัว)</label><div class="inp"><input id="cl-tadp" data-g="coil" data-f="tadp" data-k="T" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="t"></span></div></div>
+      <div class="field"><label for="cl-bf">Bypass factor (0–1)</label><div class="inp"><input id="cl-bf" data-g="coil" data-f="bf" type="number" inputmode="decimal" step="0.01" autocomplete="off"><span class="u">BF</span></div></div></div>
+      <div class="field"><label for="cl-flow">อัตราไหลลมเข้าคอยล์ (ใส่เพื่อดูโหลด)</label><div class="inp"><input id="cl-flow" data-g="coil" data-f="flow" data-k="flow" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="flow"></span></div></div>
+      <div id="cl-out"></div>
+      <div class="btns"><button class="btn pri" id="cl-add" type="button">สร้างสถานะหลังคอยล์ + กระบวนการ</button></div>
+      <p class="note">จุดหลังคอยล์อยู่บนเส้นตรงระหว่างอากาศเข้ากับ ADP: Tออก = ADP + BF·(Tเข้า − ADP) และ Wออก คิดแบบเดียวกัน (Contact factor = 1 − BF)</p>
+    </div>
+    <div class="card toolcard" id="tool-room">
+      <h2 class="h">3 · โหลดห้อง → ปริมาณลมจ่าย</h2>
+      <div class="field"><label for="rm-st">สถานะอากาศในห้อง</label><select id="rm-st" data-g="room" data-f="st"></select></div>
+      <div class="pairs"><div class="field"><label for="rm-qs">โหลด Sensible ของห้อง</label><div class="inp"><input id="rm-qs" data-g="room" data-f="qs" data-k="pow" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="pow"></span></div></div>
+      <div class="field"><label for="rm-ql">โหลด Latent ของห้อง</label><div class="inp"><input id="rm-ql" data-g="room" data-f="ql" data-k="pow" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="pow"></span></div></div></div>
+      <div class="pairs"><div class="field"><label for="rm-ts">อุณหภูมิลมจ่าย</label><div class="inp"><input id="rm-ts" data-g="room" data-f="ts" data-k="T" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="t"></span></div></div>
+      <div class="field"><label for="rm-vol">ปริมาตรห้อง (ไม่บังคับ)</label><div class="inp"><input id="rm-vol" data-g="room" data-f="vol" data-k="vol" type="number" inputmode="decimal" autocomplete="off"><span class="u" data-tu="vol"></span></div></div></div>
+      <div id="rm-out"></div>
+      <div class="btns"><button class="btn pri" id="rm-add" type="button">สร้างสถานะลมจ่ายเป็นสถานะใหม่</button></div>
+      <p class="note">ṁ = Qs ÷ [(1.006 + 1.86·W)·(Tห้อง − Tจ่าย)] และ Wจ่าย = Wห้อง − Ql ÷ (ṁ·2501) ค่า Q เป็นความร้อนที่ห้องได้รับ</p>
+    </div>
+  </div>
 </section>
 
 <!-- ===== อ้างอิง ===== -->
@@ -492,18 +548,33 @@ SHR = |Qs| / |Q|
     <div class="view" id="sh-proj">
       <div class="field"><label for="pj-name">ชื่อโปรเจกต์ปัจจุบัน</label><div class="inp txt"><input id="pj-name" type="text" maxlength="60" autocomplete="off"></div></div>
       <p class="note" id="pj-status" role="status"></p>
+      <h3 class="h" style="margin-top:6px">ข้อมูลโปรเจกต์ (พิมพ์ในหัวรายงาน)</h3>
+      <div class="field"><label for="mt-room">ห้อง / พื้นที่</label><div class="inp txt"><input id="mt-room" data-meta="room" type="text" maxlength="80" autocomplete="off"></div></div>
+      <div class="pairs"><div class="field"><label for="mt-drawing">เลขที่แบบ</label><div class="inp txt"><input id="mt-drawing" data-meta="drawing" type="text" maxlength="80" autocomplete="off"></div></div>
+      <div class="field"><label for="mt-designer">ผู้ออกแบบ</label><div class="inp txt"><input id="mt-designer" data-meta="designer" type="text" maxlength="80" autocomplete="off"></div></div></div>
+      <div class="field"><label for="mt-notes">หมายเหตุ</label><div class="inp txt"><input id="mt-notes" data-meta="notes" type="text" maxlength="300" autocomplete="off"></div></div>
       <div class="btns">
         <button class="btn pri" id="pj-new" type="button">＋ โปรเจกต์ใหม่</button>
         <button class="btn" id="pj-dup" type="button">ทำสำเนา</button>
         <button class="btn danger" id="pj-del" type="button">ลบโปรเจกต์นี้</button>
       </div>
       <div class="pjlist" id="pj-list"></div>
+      <h3 class="h" style="margin-top:6px">ไฟล์ .xls</h3>
+      <p class="note">บันทึกโปรเจกต์นี้เป็นไฟล์ .xls ไว้ในโฟลเดอร์ Downloads/Psychrometric (ที่เดียวกับรายงาน PDF/JPG) และเปิดไฟล์ที่เคยบันทึกกลับมาเป็นโปรเจกต์ใหม่ได้</p>
+      <div class="btns">
+        <button class="btn pri" id="xls-save" type="button">บันทึกเป็น .xls</button>
+        <button class="btn" id="xls-open" type="button">เปิดไฟล์ .xls</button>
+        <button class="btn" id="xls-share" type="button">แชร์ .xls</button>
+      </div>
+      <input id="xls-file" type="file" accept=".xls,.xml,application/vnd.ms-excel,text/xml,*/*" hidden>
+      <p class="note" id="xls-status" role="status"></p>
     </div>
     <div class="view" id="sh-exp" hidden>
-      <div class="field"><span class="flab">รูปแบบไฟล์</span><div class="seg txt wide" id="fmtsw" role="group" aria-label="รูปแบบไฟล์"><button data-f="pdf" aria-pressed="true">PDF</button><button data-f="jpg" aria-pressed="false">JPG</button></div></div>
+      <div class="field"><span class="flab">รูปแบบไฟล์</span><div class="seg txt wide" id="fmtsw" role="group" aria-label="รูปแบบไฟล์"><button data-f="pdf" aria-pressed="true">PDF</button><button data-f="jpg" aria-pressed="false">JPG</button><button data-f="csv" aria-pressed="false">CSV</button></div></div>
       <div class="field"><span class="flab">เนื้อหา</span><div class="seg txt wide" id="cntsw" role="group" aria-label="เนื้อหา"><button data-c="full" aria-pressed="true">รายงานเต็ม</button><button data-c="chart" aria-pressed="false">เฉพาะกราฟ</button></div></div>
       <p class="note" id="exp-note"></p>
       <button class="btn pri" id="exp-go" type="button">สร้างไฟล์และบันทึก</button>
+      <button class="btn" id="exp-share" type="button">สร้างไฟล์และแชร์ (LINE ฯลฯ)</button>
       <p class="note" id="exp-status" role="status"></p>
     </div>
   </div>
@@ -577,10 +648,11 @@ var ZONES={
   pt:{name:'ห้องผู้ป่วย',tmin:21,tmax:24,rmin:0,rmax:60}
 };
 var MODES={rh:{l:'RH ความชื้นสัมพัทธ์',k:null,u:'%'},twb:{l:'Twb อุณหภูมิกระเปาะเปียก',k:'T',u:'t'},tdp:{l:'Tdp จุดน้ำค้าง',k:'T',u:'t'},w:{l:'W ความชื้นจำเพาะ',k:'W',u:'w'},h:{l:'h เอนทัลปี',k:'h',u:'h'}};
+var TK_DEF={mix:{a:'A',b:'B',qa:1000,qb:500},coil:{from:'A',tadp:12,bf:0.2,flow:1000},room:{st:'A',qs:5,ql:1,ts:13,vol:''}};
 function defaultData(){ return {units:'SI',alt:0,active:'A',
   states:[{id:'A',t:32,mode:'rh',v:70},{id:'B',t:13,mode:'rh',v:90}],
   procs:[{from:'A',to:'B',flow:1000}],
-  zone:'or',custom:{tmin:20,tmax:24,rmin:20,rmax:60},layers:{h:true,twb:false,v:true}}; }
+  zone:'or',custom:{tmin:20,tmax:24,rmin:20,rmax:60},layers:{h:true,twb:false,v:true},tools:clone(TK_DEF),meta:{room:'',drawing:'',designer:'',notes:''}}; }
 function blankData(units){ var d=defaultData(); d.units=units==='IP'?'IP':'SI'; d.states=[{id:'A',t:24,mode:'rh',v:50}]; d.procs=[]; return d; }
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function normData(d){
@@ -590,12 +662,14 @@ function normData(d){
   var ids=o.states.map(function(s){return s.id;});
   if(ids.indexOf(o.active)<0) o.active=ids[0];
   o.procs=(Array.isArray(o.procs)?o.procs:[]).filter(function(p){return ids.indexOf(p.from)>=0&&ids.indexOf(p.to)>=0;});
+  o.tools={mix:Object.assign({},b.tools.mix,(o.tools||{}).mix),coil:Object.assign({},b.tools.coil,(o.tools||{}).coil),room:Object.assign({},b.tools.room,(o.tools||{}).room)};
+  o.meta=Object.assign({},b.meta,o.meta||{}); ['room','drawing','designer','notes'].forEach(function(k){ o.meta[k]=String(o.meta[k]==null?'':o.meta[k]).slice(0,k==='notes'?300:80); });
   if(['or','pt','custom','off'].indexOf(o.zone)<0) o.zone='or';
   if(o.units!=='IP') o.units='SI';
   return o;
 }
 var S={tab:'calc'};
-var DKEYS=['units','alt','active','states','procs','zone','custom','layers'];
+var DKEYS=['units','alt','active','states','procs','zone','custom','layers','tools','meta'];
 function loadInto(d){ var o=normData(d); DKEYS.forEach(function(k){ S[k]=o[k]; }); }
 function projData(){ var o={}; DKEYS.forEach(function(k){ o[k]=S[k]; }); return clone(o); }
 function newPid(){ return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -625,10 +699,24 @@ var ui={zoom:1,mode:'point',armDel:false,armPj:false,procKey:'',zlUnits:null,img
 
 var dirty={}, delQ={}, flushT=null, flushing=false;
 function lsWrite(){ try{ localStorage.setItem(LSK,JSON.stringify({cur:CUR,tab:S.tab,projects:PROJ,synced:SYNCED})); }catch(e){} }
+var HIST={}, histApplying=false;
+function H(){ return HIST[CUR]||(HIST[CUR]={u:[],r:[],t:0}); }
 function save(){
   var p=PROJ[CUR], d=projData();
-  if(JSON.stringify(d)!==JSON.stringify(p.data)){ p.data=d; p.updatedAt=Date.now(); delete p.fresh; markDirty(CUR); }
-  lsWrite();
+  if(JSON.stringify(d)!==JSON.stringify(p.data)){
+    if(!histApplying){ var h=H(), now=Date.now(); if(!h.u.length||now-h.t>700){ h.u.push(p.data); if(h.u.length>80) h.u.shift(); } h.r=[]; h.t=now; }
+    p.data=d; p.updatedAt=Date.now(); delete p.fresh; markDirty(CUR);
+  }
+  lsWrite(); updHist();
+}
+var toastT=null;
+function toast(m){ var t=document.getElementById('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; t.setAttribute('role','status'); document.body.appendChild(t); } t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){ t.hidden=true; },1600); }
+function updHist(){ var h=HIST[CUR]||{u:[],r:[]}, u=document.getElementById('btn-undo'), r=document.getElementById('btn-redo'); if(u) u.disabled=!h.u.length; if(r) r.disabled=!h.r.length; }
+function stepHist(dir){
+  save(); var h=H(), from=dir<0?h.u:h.r, to=dir<0?h.r:h.u; if(!from.length) return;
+  var target=from.pop(); to.push(projData());
+  histApplying=true; loadInto(target); save(); histApplying=false; h.t=0; ui.procKey=''; ui.armDel=false;
+  render(); toast(dir<0?'ย้อนกลับแล้ว':'ไปข้างหน้าแล้ว');
 }
 function markDirty(id){ if(DBS.mode!=='sync') return; dirty[id]=true; clearTimeout(flushT); flushT=setTimeout(flush,900); }
 async function flush(){
@@ -981,6 +1069,7 @@ function renderLoad(X){
     card.querySelector('[data-fn]').textContent=okF?('= '+(IP?fmt(Q,0)+' m³/h':fmt(Q*0.588577,0)+' CFM')+' · '+fmt(Q/3.6,1)+' L/s'):'';
     $('po-'+i).innerHTML=procOutHTML(r);
   });
+  renderTools(X);
   var ok=res.filter(function(r){return !r.err;}), sum=$('load-sum');
   if(ok.length>=2){
     var cl=0,ht=0,wt=0,wa=0; ok.forEach(function(r){ if(r.qT<0) cl+=-r.qT; else ht+=r.qT; if(r.water>=0) wt+=r.water; else wa+=-r.water; });
@@ -1018,7 +1107,7 @@ function renderShell(){
   document.querySelectorAll('#usw button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.u===S.units)); });
   document.querySelectorAll('#nav button').forEach(function(b){ b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)); });
   ['calc','chart','load','ref'].forEach(function(k){ $('v-'+k).hidden=(k!==S.tab); });
-  $('chips').hidden=(S.tab==='load'||S.tab==='ref');
+  $('chips').style.visibility=(S.tab==='load'||S.tab==='ref')?'hidden':'visible'; updHist();
   renderChips(); renderZone();
 }
 function render(){
@@ -1113,6 +1202,7 @@ function refreshSheetStatus(){
 function refreshSheet(){
   if($('sheet').hidden) return;
   setVal($('pj-name'),PROJ[CUR].name);
+  document.querySelectorAll('[data-meta]').forEach(function(el){ setVal(el,S.meta[el.dataset.meta]||''); });
   refreshSheetStatus();
   var ids=Object.keys(PROJ).sort();
   $('pj-list').innerHTML=ids.map(function(id){
@@ -1122,7 +1212,7 @@ function refreshSheet(){
   var del=$('pj-del'); del.disabled=ids.length<2; del.textContent=ui.armPj?'แตะอีกครั้งเพื่อลบ':'ลบโปรเจกต์นี้'; del.classList.toggle('armed',ui.armPj);
   $('fmtsw').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.f===ui.fmt)); });
   $('cntsw').querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.c===ui.cnt)); });
-  $('exp-note').textContent=ui.cnt==='full'
+  if(ui.fmt==='csv') $('exp-note').textContent='ตาราง CSV (UTF-8) ของสถานะอากาศและกระบวนการ เปิดใน Excel ได้'; else $('exp-note').textContent=ui.cnt==='full'
     ?'รายงานเต็ม ขนาด A4: ชื่อโปรเจกต์ ตารางสถานะอากาศ กราฟ และโหลดของทุกกระบวนการ'+(ui.fmt==='jpg'?' (ถ้ามีหลายหน้า จะต่อเป็นภาพเดียวแนวตั้ง)':'')
     :'เฉพาะกราฟ ขนาด A4: ใช้เส้น เขตเป้าหมาย และจุดสถานะตามที่เห็นในแท็บกราฟ';
 }
@@ -1195,8 +1285,12 @@ function repHeader(pg,X,sub){
   var name=PROJ[CUR].name||'ไม่มีชื่อ', dt=new Date();
   TX(pg,FIT(pg,name,186,{w:600,s:7.5}),12,20,{w:600,s:7.5});
   TX(pg,(sub||'Psychrometric report')+' · '+dt.getFullYear()+'-'+p2(dt.getMonth()+1)+'-'+p2(dt.getDate())+' · หน่วย '+S.units+' · ความสูง '+fmt(toU('len',altNum()),0)+' '+un('len')+' · ความดัน '+fmt(toU('p',X.P),isIP()?3:2)+' '+un('p'),12,27,{s:3.2,col:'#51627A'});
-  LN(pg,12,31,198,31,'#101E32',0.4);
-  return 31;
+  var yy=27, M=S.meta||{}, l1=[];
+  if(M.room) l1.push('ห้อง/พื้นที่: '+M.room); if(M.drawing) l1.push('แบบ: '+M.drawing); if(M.designer) l1.push('ผู้ออกแบบ: '+M.designer);
+  if(l1.length){ yy+=5; TX(pg,FIT(pg,l1.join('  ·  '),186,{s:3.2}),12,yy,{s:3.2}); }
+  if(M.notes){ yy+=5; TX(pg,FIT(pg,'หมายเหตุ: '+M.notes,186,{s:3}),12,yy,{s:3,col:'#51627A'}); }
+  LN(pg,12,yy+4,198,yy+4,'#101E32',0.4);
+  return yy+4;
 }
 function repStates(pg,X,y){
   var IP=isIP();
@@ -1311,12 +1405,14 @@ var dlP=null;
 function getDl(){ if(!dlP) dlP=(async function(){ try{ if(window.claude&&window.claude.use) return await window.claude.use('downloads'); }catch(e){} return null; })(); return dlP; }
 function safeName(s){ s=String(s||'').replace(/[^\w฀-๿.\- ]+/g,'_').replace(/\s+/g,' ').trim().slice(0,60); return s||'project'; }
 function dlError(e){ var c=e&&e.code; if(c==='declined') return 'ยกเลิกการบันทึก'; if(c==='too_large') return 'ไฟล์ใหญ่เกินไป ลองเลือกเฉพาะกราฟ'; if(c==='unavailable'||c==='not_granted'||c==='capability_disabled'||c==='capability_removed') return 'มุมมองนี้บันทึกไฟล์ไม่ได้ ลองเปิดลิงก์ในแอป Claude หรือเบราว์เซอร์'; return 'สร้างไฟล์ไม่สำเร็จ'+(e&&e.message?' ('+e.message+')':''); }
-async function doExport(){
-  var st=$('exp-status'), btn=$('exp-go'); btn.disabled=true; st.textContent='กำลังสร้างไฟล์…';
+async function doExport(share){
+  var st=$('exp-status'), btn=$('exp-go'), btn2=$('exp-share'); btn.disabled=true; btn2.disabled=true; st.textContent='กำลังสร้างไฟล์…';
   try{
     var dl=await getDl(); if(!dl){ st.textContent='มุมมองนี้บันทึกไฟล์ไม่ได้ ลองเปิดลิงก์ในแอป Claude หรือเบราว์เซอร์'; return; }
-    var cvs=await renderReport({content:ui.cnt}), data, ext, k;
-    if(ui.fmt==='pdf'){
+    var data, ext, k, cvs;
+    if(ui.fmt==='csv'){ data=new Blob(['\uFEFF'+buildCsv()],{type:'text/csv'}); ext='csv'; } else cvs=await renderReport({content:ui.cnt});
+    if(ui.fmt==='csv'){}
+    else if(ui.fmt==='pdf'){
       var jp=[]; for(k=0;k<cvs.length;k++){ var b=await toBlob(cvs[k],'image/jpeg',0.9); jp.push({jpg:new Uint8Array(await b.arrayBuffer()),w:cvs[k].width,h:cvs[k].height}); }
       data=makePdf(jp); ext='pdf';
     } else {
@@ -1324,13 +1420,14 @@ async function doExport(){
       if(cvs.length>1){ all=document.createElement('canvas'); all.width=cvs[0].width; all.height=cvs[0].height*cvs.length; var g=all.getContext('2d'); cvs.forEach(function(c,i){ g.drawImage(c,0,i*c.height); }); }
       data=await toBlob(all,'image/jpeg',0.92); ext='jpg';
     }
-    var fname=safeName(PROJ[CUR].name)+'_psychrometric'+(ui.cnt==='chart'?'_chart':'')+'.'+ext;
-    await dl.save({filename:fname,data:data});
-    st.textContent='บันทึกแล้ว: '+fname;
+    var fname=safeName(PROJ[CUR].name)+'_psychrometric'+(ui.cnt==='chart'&&ui.fmt!=='csv'?'_chart':'')+'.'+ext;
+    if(share&&dl.share){ await dl.share({filename:fname,data:data}); st.textContent='ส่งไปยังหน้าต่างแชร์แล้ว: '+fname; }
+    else { await dl.save({filename:fname,data:data}); st.textContent='บันทึกแล้ว: '+fname; }
   }catch(e){ st.textContent=dlError(e); }
-  finally{ btn.disabled=false; }
+  finally{ btn.disabled=false; btn2.disabled=false; }
 }
-$('exp-go').addEventListener('click',doExport);
+$('exp-go').addEventListener('click',function(){ doExport(false); });
+$('exp-share').addEventListener('click',function(){ doExport(true); });
 
 /* ---------- sea-level chart images (reference tab) ---------- */
 var IMGF={SI:'charts/psychrometric_chart_SI_sea_level',IP:'charts/psychrometric_chart_IP_sea_level'};
@@ -1356,6 +1453,204 @@ async function saveRefFile(ext){
 }
 $('dl-png').addEventListener('click',function(){ saveRefFile('png'); });
 $('dl-pdf').addEventListener('click',function(){ saveRefFile('pdf'); });
+
+$('btn-undo').addEventListener('click',function(){ stepHist(-1); });
+$('btn-redo').addEventListener('click',function(){ stepHist(1); });
+
+/* ---------- project <-> .xls (SpreadsheetML 2003; full project JSON kept in a hidden sheet) ---------- */
+function xe(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,''); }
+function xS(v,st){ return '<Cell'+(st?' ss:StyleID="'+st+'"':'')+'><Data ss:Type="String">'+xe(v)+'</Data></Cell>'; }
+function xN(v,d){ return (typeof v==='number'&&isFinite(v))?'<Cell><Data ss:Type="Number">'+(+v.toFixed(d))+'</Data></Cell>':xS('—'); }
+function xR(c){ return '<Row>'+c.join('')+'</Row>'; }
+function buildXls(){
+  save(); applyRange();
+  var X=ctx(), IP=isIP(), pj=PROJ[CUR], name=pj.name||'ไม่มีชื่อ', dt=new Date();
+  var z=getZone(), zl=z&&!z.bad?(z.name+' '+zT(z)+' · '+zR(z)):(z&&z.bad?z.bad:'ไม่ได้เลือกเกณฑ์ห้อง');
+  var r1=[xR([xS('PsyChart','t')]),xR([xS('โปรเจกต์'),xS(name)]),xR([xS('วันที่ส่งออก'),xS(dt.getFullYear()+'-'+p2(dt.getMonth()+1)+'-'+p2(dt.getDate()))]),
+    xR([xS('หน่วย'),xS(S.units)]),xR([xS('ความสูงจากระดับน้ำทะเล ('+un('len')+')'),xN(toU('len',altNum()),0)]),xR([xS('ความดันบรรยากาศ ('+un('p')+')'),xN(toU('p',X.P),IP?3:2)]),xR([xS('เกณฑ์ห้อง'),xS(zl)]),xR([xS('ห้อง/พื้นที่'),xS(S.meta.room)]),xR([xS('เลขที่แบบ'),xS(S.meta.drawing)]),xR([xS('ผู้ออกแบบ'),xS(S.meta.designer)]),xR([xS('หมายเหตุ'),xS(S.meta.notes)]),xR([]),
+    xR(['สถานะ','Tdb ('+un('t')+')','RH (%)','W ('+un('w')+')','h ('+un('h')+')','Twb ('+un('t')+')','Tdp ('+un('t')+')','v ('+un('v')+')','เกณฑ์'].map(function(h){ return xS(h,'h'); }))];
+  S.states.forEach(function(s){
+    var c=X.c[s.id];
+    if(c.err){ r1.push(xR([xS(s.id),xS(c.err)])); return; }
+    var zc=zoneCheck(c);
+    r1.push(xR([xS(s.id),xN(toU('T',c.t),1),xN(c.rh,1),xN(toU('W',c.W*1000),IP?1:2),xN(toU('h',c.h),IP?2:1),xN(toU('T',c.twb),1),xN(toU('T',c.tdp),1),xN(toU('v',c.v),IP?3:4),xS(zc&&!zc.bad?(zc.issues.length?'นอก':'ผ่าน'):'')]));
+  });
+  var r2=[xR(['#','ต้นทาง','ปลายทาง','อัตราไหล ('+un('flow')+')','โหลดรวม ('+un('pow')+')','TR','Sensible ('+un('pow')+')','Latent ('+un('pow')+')','SHR','น้ำควบแน่น ('+un('mh')+')'].map(function(h){ return xS(h,'h'); }))];
+  S.procs.forEach(function(p,i){
+    var r=procCalc(p,X);
+    if(r.err){ r2.push(xR([xN(i+1,0),xS(p.from),xS(p.to),xS(r.err)])); return; }
+    r2.push(xR([xN(i+1,0),xS(p.from),xS(p.to),xN(toU('flow',+p.flow),0),xN(toU('pow',r.qT),IP?0:2),xN(r.qT/3.517,2),xN(toU('pow',r.qS),IP?0:2),xN(toU('pow',r.qL),IP?0:2),xN(r.shr,2),xN(toU('mh',r.water),2)]));
+  });
+  r2.push(xR([])); r2.push(xR([xS('ค่าลบ = ดึงความร้อนออก · 1 TR = 3.517 kW')]));
+  var json=JSON.stringify({app:'PsyChart',v:1,name:name,data:projData()}), r3=[xR([xS('PsyChart project v1')])];
+  for(var i=0;i<json.length;i+=6000) r3.push(xR([xS(json.slice(i,i+6000))]));
+  function cols(w){ return w.map(function(x){ return '<Column ss:Width="'+x+'"/>'; }).join(''); }
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n'+
+  '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+
+  '<Styles><Style ss:ID="h"><Font ss:Bold="1"/><Interior ss:Color="#E4EAF2" ss:Pattern="Solid"/></Style><Style ss:ID="t"><Font ss:Bold="1" ss:Size="14"/></Style></Styles>'+
+  '<Worksheet ss:Name="สรุป"><Table>'+cols([190,90,70,90,80,80,80,80,60])+r1.join('')+'</Table></Worksheet>'+
+  '<Worksheet ss:Name="กระบวนการ"><Table>'+cols([30,60,60,110,110,60,110,110,60,120])+r2.join('')+'</Table></Worksheet>'+
+  '<Worksheet ss:Name="_PSYCHRO_DATA"><Table>'+r3.join('')+'</Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><Visible>SheetHidden</Visible></WorksheetOptions></Worksheet></Workbook>';
+}
+async function saveXls(){
+  var st=$('xls-status'); st.textContent='กำลังสร้างไฟล์…';
+  try{
+    var dl=await getDl(); if(!dl){ st.textContent='มุมมองนี้บันทึกไฟล์ไม่ได้'; return; }
+    var fname=safeName(PROJ[CUR].name)+'.xls';
+    await dl.save({filename:fname,data:new Blob([buildXls()],{type:'application/vnd.ms-excel'})});
+    st.textContent='บันทึกแล้ว: '+fname;
+  }catch(e){ st.textContent=dlError(e); }
+}
+async function openXls(file){
+  var st=$('xls-status');
+  try{
+    var txt=await file.text(); if(txt.charCodeAt(0)===0xFEFF) txt=txt.slice(1);
+    var doc=new DOMParser().parseFromString(txt,'application/xml');
+    if(doc.getElementsByTagName('parsererror').length) throw new Error('อ่านไฟล์ไม่ได้');
+    var ws=[].slice.call(doc.getElementsByTagName('Worksheet')), data=null;
+    ws.forEach(function(w){ if((w.getAttribute('ss:Name')||w.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Name'))==='_PSYCHRO_DATA') data=w; });
+    if(!data) throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
+    var cells=[].slice.call(data.getElementsByTagName('Data')).map(function(d){ return d.textContent; });
+    if(cells[0]!=='PsyChart project v1') throw new Error('ไม่ใช่ไฟล์โปรเจกต์ของ PsyChart');
+    var obj=JSON.parse(cells.slice(1).join(''));
+    if(!obj||!obj.data||!Array.isArray(obj.data.states)) throw new Error('ข้อมูลในไฟล์ไม่ครบ');
+    save();
+    var id=newPid(), nm=String(obj.name||file.name.replace(/\.[^.]+$/,'')||'นำเข้า').slice(0,60);
+    if(Object.keys(PROJ).some(function(k){ return PROJ[k].name===nm; })) nm=nm.slice(0,48)+' (นำเข้า)';
+    PROJ[id]={name:nm,updatedAt:Date.now(),data:normData(obj.data)};
+    markDirty(id); CUR=id; loadInto(PROJ[id].data); ui.procKey=''; ui.armDel=false; lsWrite(); render(); refreshSheet();
+    st.textContent='เปิดไฟล์แล้ว สร้างเป็นโปรเจกต์ใหม่: '+nm;
+  }catch(e){ st.textContent='เปิดไฟล์ไม่สำเร็จ: '+(e&&e.message?e.message:'ไฟล์ไม่ถูกต้อง'); }
+}
+$('xls-save').addEventListener('click',saveXls);
+$('xls-open').addEventListener('click',function(){ $('xls-file').click(); });
+$('xls-file').addEventListener('change',function(e){ var f=e.target.files&&e.target.files[0]; e.target.value=''; if(f) openXls(f); });
+
+/* ---------- project info fields ---------- */
+document.querySelectorAll('[data-meta]').forEach(function(el){ el.addEventListener('input',function(){ S.meta[el.dataset.meta]=el.value; save(); }); });
+
+/* ---------- CSV ---------- */
+function csvC(v){ v=String(v); return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function csvR(a){ return a.map(csvC).join(','); }
+function nr(v,d){ return (typeof v==='number'&&isFinite(v))?+v.toFixed(d):''; }
+function buildCsv(){
+  save(); applyRange();
+  var X=ctx(), IP=isIP(), pj=PROJ[CUR], L=[], M=S.meta;
+  L.push(csvR(['PsyChart',pj.name||'']));
+  L.push(csvR(['ห้อง/พื้นที่',M.room])); L.push(csvR(['เลขที่แบบ',M.drawing])); L.push(csvR(['ผู้ออกแบบ',M.designer])); L.push(csvR(['หมายเหตุ',M.notes]));
+  L.push(csvR(['หน่วย',S.units])); L.push(csvR(['ความสูง ('+un('len')+')',nr(toU('len',altNum()),0)])); L.push(csvR(['ความดัน ('+un('p')+')',nr(toU('p',X.P),IP?3:2)])); L.push('');
+  L.push(csvR(['สถานะ','Tdb ('+un('t')+')','RH (%)','W ('+un('w')+')','h ('+un('h')+')','Twb ('+un('t')+')','Tdp ('+un('t')+')','v ('+un('v')+')','เกณฑ์']));
+  S.states.forEach(function(s){ var c=X.c[s.id]; if(c.err){ L.push(csvR([s.id,c.err])); return; } var zc=zoneCheck(c);
+    L.push(csvR([s.id,nr(toU('T',c.t),1),nr(c.rh,1),nr(toU('W',c.W*1000),IP?1:2),nr(toU('h',c.h),IP?2:1),nr(toU('T',c.twb),1),nr(toU('T',c.tdp),1),nr(toU('v',c.v),IP?3:4),zc&&!zc.bad?(zc.issues.length?'นอก':'ผ่าน'):''])); });
+  L.push('');
+  L.push(csvR(['#','ต้นทาง','ปลายทาง','อัตราไหล ('+un('flow')+')','โหลดรวม ('+un('pow')+')','TR','Sensible ('+un('pow')+')','Latent ('+un('pow')+')','SHR','น้ำควบแน่น ('+un('mh')+')']));
+  S.procs.forEach(function(p,i){ var r=procCalc(p,X); if(r.err){ L.push(csvR([i+1,p.from,p.to,r.err])); return; }
+    L.push(csvR([i+1,p.from,p.to,nr(toU('flow',+p.flow),0),nr(toU('pow',r.qT),IP?0:2),nr(r.qT/3.517,2),nr(toU('pow',r.qS),IP?0:2),nr(toU('pow',r.qL),IP?0:2),nr(r.shr,2),nr(toU('mh',r.water),2)])); });
+  return L.join('\r\n')+'\r\n';
+}
+$('xls-share').addEventListener('click',async function(){
+  var st=$('xls-status'); st.textContent='กำลังสร้างไฟล์…';
+  try{ var dl=await getDl(); if(!dl||!dl.share){ st.textContent='แชร์ไม่ได้ในมุมมองนี้'; return; }
+    var fname=safeName(PROJ[CUR].name)+'.xls'; await dl.share({filename:fname,data:new Blob([buildXls()],{type:'application/vnd.ms-excel'})}); st.textContent='ส่งไปยังหน้าต่างแชร์แล้ว: '+fname;
+  }catch(e){ st.textContent=dlError(e); }
+});
+
+/* ---------- extra tools: mixing, coil (ADP/BF), room load -> supply air ---------- */
+function addCalcState(t,Wg){
+  var id=newId(); if(!id){ toast('มีครบ 8 สถานะแล้ว'); return null; }
+  S.states.push({id:id,t:+t.toFixed(3),mode:'w',v:+Wg.toFixed(4)}); S.active=id; return id;
+}
+function tTile(l,v,u){ return '<div class="tile"><span class="l">'+l+'</span><span class="v">'+v+(u?'<small>'+u+'</small>':'')+'</span></div>'; }
+function numOK(x,min){ return x!==''&&x!==null&&isFinite(+x)&&+x>min; }
+function calcMix(X){
+  var m=S.tools.mix, A=X.c[m.a], B=X.c[m.b];
+  if(!A||!B||m.a===m.b) return {err:'เลือกสถานะสองจุดที่ต่างกัน'};
+  if(A.err||B.err) return {err:'ตรวจค่าสถานะ '+(A.err?m.a:m.b)+' ในแท็บคำนวณก่อน'};
+  if(m.qa===''||m.qb===''||!(+m.qa>=0)||!(+m.qb>=0)||!(+m.qa+ +m.qb>0)) return {err:'กรอกอัตราไหลของทั้งสองชุด (ไม่ติดลบ และรวมกันมากกว่า 0)'};
+  var ma=+m.qa/(3600*A.v), mb=+m.qb/(3600*B.v), mt=ma+mb, W=(ma*A.W+mb*B.W)/mt, h=(ma*A.h+mb*B.h)/mt, t=(h-2501*W)/(1.006+1.86*W);
+  var c=compute({t:t,mode:'w',v:W*1000},X.P), vm=0.287042*(t+273.15)*(1+1.607858*W)/X.P;
+  return {t:t,W:W,h:h,ma:ma,mb:mb,mt:mt,fa:ma/mt,c:c,vol:mt*vm*3600};
+}
+function calcCoil(X){
+  var k=S.tools.coil, A=X.c[k.from];
+  if(!A) return {err:'เลือกสถานะอากาศเข้า'};
+  if(A.err) return {err:'ตรวจค่าสถานะ '+k.from+' ในแท็บคำนวณก่อน'};
+  if(k.tadp===''||!isFinite(+k.tadp)) return {err:'กรอก ADP'};
+  if(k.bf===''||!(+k.bf>=0&&+k.bf<=1)) return {err:'BF ต้องอยู่ระหว่าง 0 ถึง 1'};
+  var tadp=+k.tadp, bf=+k.bf;
+  if(!(tadp<A.t)) return {err:'ADP ต้องต่ำกว่า Tdb ของอากาศเข้า'};
+  var adp=compute({t:tadp,mode:'rh',v:100},X.P); if(adp.err) return {err:'ADP: '+adp.err};
+  if(!(adp.W<A.W)) return {err:'ADP ต้องแห้งกว่าอากาศเข้า (W ที่ ADP ต้องต่ำกว่า W อากาศเข้า) ลด ADP ลงให้ต่ำกว่าจุดน้ำค้างของอากาศเข้า ('+fmt(toU('T',A.tdp),1)+' '+un('t')+')'};
+  var tL=tadp+bf*(A.t-tadp), WL=adp.W+bf*(A.W-adp.W), L=compute({t:tL,mode:'w',v:WL*1000},X.P);
+  if(L.err) return {err:'จุดหลังคอยล์เกินเส้นอิ่มตัว (RH > 100 %) เส้นตรง ADP–อากาศเข้าอยู่เหนือเส้นอิ่มตัว: ให้เพิ่ม ADP ให้สูงขึ้น หรือลด BF'};
+  var r={t:tL,W:WL,L:L,adp:adp,cf:1-bf};
+  if(numOK(k.flow,0)){
+    var ma=+k.flow/(3600*A.v), hC=enth(tL,A.W); r.ma=ma; r.qT=ma*(L.h-A.h); r.qS=ma*(hC-A.h); r.qL=r.qT-r.qS; r.shr=r.qT?r.qS/r.qT:NaN; r.water=ma*(A.W-WL)*3600;
+  }
+  return r;
+}
+function calcRoom(X){
+  var k=S.tools.room, R=X.c[k.st];
+  if(!R) return {err:'เลือกสถานะห้อง'};
+  if(R.err) return {err:'ตรวจค่าสถานะ '+k.st+' ในแท็บคำนวณก่อน'};
+  if(!numOK(k.qs,0)) return {err:'โหลด Sensible ต้องมากกว่า 0'};
+  if(k.ql===''||!(+k.ql>=0)) return {err:'โหลด Latent ต้องไม่ติดลบ (ใส่ 0 ได้)'};
+  if(k.ts===''||!isFinite(+k.ts)) return {err:'กรอกอุณหภูมิลมจ่าย'};
+  var qs=+k.qs, ql=+k.ql, ts=+k.ts;
+  if(!(ts<R.t)) return {err:'ลมจ่ายต้องเย็นกว่าห้อง (Tห้อง = '+fmt(toU('T',R.t),1)+' '+un('t')+')'};
+  var Ws=R.W, ma=0, i; for(i=0;i<10;i++){ ma=qs/((1.006+1.86*Ws)*(R.t-ts)); Ws=R.W-ql/(ma*2501); }
+  if(Ws<0) return {err:'Latent สูงเกินไปสำหรับ Tจ่ายนี้ (ลมจ่ายต้องแห้งเกินจริง) ลองลด Tจ่ายลงเพื่อเพิ่มปริมาณลม'};
+  var S2=compute({t:ts,mode:'w',v:Ws*1000},X.P);
+  if(S2.err) return {err:'ลมจ่ายเกินจุดอิ่มตัว (RH > 100 %) ที่ Tจ่ายนี้ ปรับ Tจ่ายหรือโหลด Latent ให้เหมาะกับสถานะห้อง'};
+  var vol=ma*S2.v*3600, room=+k.vol, ach=(k.vol!==''&&room>0)?vol/room:NaN;
+  return {ma:ma,Ws:Ws,S:S2,vol:vol,ach:ach,shr:qs/(qs+ql),dT:R.t-ts};
+}
+function renderTools(X){
+  var T=S.tools, IP=isIP(), key=S.states.map(function(s){return s.id;}).join('')+'|'+S.units;
+  [['mx-a','mix','a'],['mx-b','mix','b'],['cl-from','coil','from'],['rm-st','room','st']].forEach(function(d){
+    var el=$(d[0]), v=stOf(T[d[1]][d[2]])?T[d[1]][d[2]]:S.states[0].id;
+    if(ui.toolKey!==key) el.innerHTML=stateOpts(v); if(document.activeElement!==el) el.value=v;
+  });
+  ui.toolKey=key;
+  document.querySelectorAll('#tools [data-tu]').forEach(function(u){ var k=u.dataset.tu; u.textContent=k==='vol'?(IP?'ft³':'m³'):un(k); });
+  setVal($('mx-qa'),showIn('flow',T.mix.qa)); setVal($('mx-qb'),showIn('flow',T.mix.qb));
+  setVal($('cl-tadp'),showIn('T',T.coil.tadp)); setVal($('cl-bf'),T.coil.bf); setVal($('cl-flow'),showIn('flow',T.coil.flow));
+  setVal($('rm-qs'),showIn('pow',T.room.qs)); setVal($('rm-ql'),showIn('pow',T.room.ql)); setVal($('rm-ts'),showIn('T',T.room.ts));
+  setVal($('rm-vol'),T.room.vol===''?'':disp(IP?+T.room.vol*35.3147:+T.room.vol,2));
+  var m=calcMix(X), o;
+  if(m.err) o='<p class="err">'+m.err+'</p>';
+  else if(m.c.err) o='<p class="err">จุดผสมอยู่เหนือเส้นอิ่มตัว (เกิดหมอก/ควบแน่น) Tdb '+fmt(toU('T',m.t),1)+' '+un('t')+' · W '+fmt(toU('W',m.W*1000),IP?1:2)+' '+un('w')+'</p>';
+  else o='<div class="tiles">'+tTile('Tdb',fmt(toU('T',m.c.t),1),un('t'))+tTile('RH',fmt(m.c.rh,1),'%')+tTile('W',fmt(toU('W',m.W*1000),IP?1:2),un('w'))+tTile('h',fmt(toU('h',m.h),IP?2:1),un('h'))+
+    tTile('ปริมาณลมผสม',fmt(toU('flow',m.vol),0),un('flow'))+tTile('สัดส่วนมวล 1 : 2',fmt(m.fa*100,0)+' : '+fmt((1-m.fa)*100,0),'%')+'</div>';
+  $('mx-out').innerHTML=o; $('mx-add').disabled=!!(m.err||m.c.err); ui.mix=m;
+  var c=calcCoil(X);
+  if(c.err) o='<p class="err">'+c.err+'</p>';
+  else { o='<div class="tiles">'+tTile('Tdb ออกคอยล์',fmt(toU('T',c.L.t),1),un('t'))+tTile('RH ออกคอยล์',fmt(c.L.rh,1),'%')+tTile('W ออกคอยล์',fmt(toU('W',c.W*1000),IP?1:2),un('w'))+tTile('h ออกคอยล์',fmt(toU('h',c.L.h),IP?2:1),un('h'))+tTile('Contact factor',fmt(c.cf*100,0),'%')+tTile('W ที่ ADP',fmt(toU('W',c.adp.W*1000),IP?1:2),un('w'));
+    if(c.qT!==undefined){ var pd=IP?0:2; o+=tTile('โหลดรวม',fmt(toU('pow',-c.qT),pd),un('pow'))+tTile('คิดเป็น',fmt(-c.qT/3.517,2),'TR')+tTile('Sensible',fmt(toU('pow',-c.qS),pd),un('pow'))+tTile('Latent',fmt(toU('pow',-c.qL),pd),un('pow'))+tTile('SHR',fmt(c.shr,2),'')+tTile('น้ำควบแน่น',fmt(toU('mh',c.water),2),un('mh')); }
+    o+='</div>'; }
+  $('cl-out').innerHTML=o; $('cl-add').disabled=!!c.err; ui.coil=c;
+  var r=calcRoom(X);
+  if(r.err) o='<p class="err">'+r.err+'</p>';
+  else { var Q=r.vol; o='<div class="hero"><span class="cap">ปริมาณลมจ่ายที่ต้องใช้</span><span class="big">'+fmt(toU('flow',Q),0)+'<small>'+un('flow')+'</small></span></div>'+
+    '<div class="dl">'+(IP?fmt(Q,0)+' m³/h':fmt(Q*0.588577,0)+' CFM')+' · '+fmt(Q/3.6,1)+' L/s</div>'+
+    '<div class="tiles">'+tTile('Tdb ลมจ่าย',fmt(toU('T',r.S.t),1),un('t'))+tTile('RH ลมจ่าย',fmt(r.S.rh,1),'%')+tTile('W ลมจ่าย',fmt(toU('W',r.Ws*1000),IP?1:2),un('w'))+tTile('ΔT ห้อง−จ่าย',fmt(toU('dT',r.dT),1),un('t'))+
+    tTile('มวลอากาศแห้ง ṁ',fmt(toU('mass',r.ma),IP?0:3),un('mass'))+tTile('SHR ห้อง',fmt(r.shr,2),'')+(isFinite(r.ach)?tTile('ACH',fmt(r.ach,1),'ครั้ง/ชม.'):'')+'</div>'; }
+  $('rm-out').innerHTML=o; $('rm-add').disabled=!!r.err; ui.room=r;
+}
+$('tools').addEventListener('input',function(e){
+  var el=e.target; if(!el.dataset.g||el.tagName==='SELECT') return;
+  var k=el.dataset.k, v;
+  if(k==='vol') v=el.value===''?'':(isIP()?+el.value/35.3147:el.value); else v=readIn(k||null,el.value);
+  S.tools[el.dataset.g][el.dataset.f]=v; save(); renderTools(ctx());
+});
+$('tools').addEventListener('change',function(e){ var el=e.target; if(!el.dataset.g||el.tagName!=='SELECT') return; S.tools[el.dataset.g][el.dataset.f]=el.value; save(); renderTools(ctx()); });
+$('mx-add').addEventListener('click',function(){ var m=ui.mix; if(!m||m.err||m.c.err) return; var id=addCalcState(m.t,m.W*1000); if(id){ save(); render(); toast('เพิ่มสถานะ '+id+' (จุดผสม)'); } });
+$('cl-add').addEventListener('click',function(){
+  var c=ui.coil; if(!c||c.err) return; var k=S.tools.coil, from=k.from;
+  var id=addCalcState(c.t,c.W*1000); if(!id) return;
+  S.procs.push({from:from,to:id,flow:numOK(k.flow,0)?k.flow:1000}); save(); render(); toast('เพิ่มสถานะ '+id+' และกระบวนการ '+from+' → '+id);
+});
+$('rm-add').addEventListener('click',function(){ var r=ui.room; if(!r||r.err) return; var id=addCalcState(r.S.t,r.Ws*1000); if(id){ save(); render(); toast('เพิ่มสถานะ '+id+' (ลมจ่าย)'); } });
 
 render();
 initDb();
