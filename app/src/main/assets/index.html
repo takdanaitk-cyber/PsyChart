@@ -16,7 +16,7 @@
   --bg:#F3F6FA; --surface:#FFFFFF; --ink:#101E32; --muted:#51627A; --line:#D4DCE8; --grid:#E4EAF2;
   --accent:#087E8B; --on-pt:#FFFFFF;
   --s0:#087E8B; --s1:#B45309; --s2:#6D3FC0; --s3:#1F7A4F; --s4:#B4237A; --s5:#8A6D00; --s6:#2B5FD9; --s7:#5B6770;
-  --hl:#B45309; --wl:#2F63B5; --vl:#7C3FA0;
+  --hl:#B45309; --wl:#2F63B5; --vl:#7C3FA0; --cool:#1D4ED8; --heat:#DC2626;
   --ok:#1F7A4F; --warn:#92400E; --bad:#B42318; --zone:#2E8B63;
   --font-body:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
   --font-data:'IBM Plex Mono',ui-monospace,'Roboto Mono',monospace;
@@ -26,7 +26,7 @@
     --bg:#101E32; --surface:#18293F; --ink:#F3F6FA; --muted:#9DB0C8; --line:#2B4262; --grid:#203450;
     --accent:#2FB8C6; --on-pt:#06202A;
     --s0:#2FB8C6; --s1:#F59E0B; --s2:#B79BF0; --s3:#5FC592; --s4:#F08CC4; --s5:#E3C25B; --s6:#86A8FF; --s7:#A9B6BE;
-    --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA;
+    --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA; --cool:#6EA8FF; --heat:#FF6B6B;
     --ok:#5FC592; --warn:#F5B84B; --bad:#F18A80; --zone:#4CB88A; color-scheme:dark;
   }
 }
@@ -34,7 +34,7 @@
   --bg:#101E32; --surface:#18293F; --ink:#F3F6FA; --muted:#9DB0C8; --line:#2B4262; --grid:#203450;
   --accent:#2FB8C6; --on-pt:#06202A;
   --s0:#2FB8C6; --s1:#F59E0B; --s2:#B79BF0; --s3:#5FC592; --s4:#F08CC4; --s5:#E3C25B; --s6:#86A8FF; --s7:#A9B6BE;
-  --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA;
+  --hl:#F59E0B; --wl:#7FA9F2; --vl:#C79BEA; --cool:#6EA8FF; --heat:#FF6B6B;
   --ok:#5FC592; --warn:#F5B84B; --bad:#F18A80; --zone:#4CB88A; color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -134,7 +134,7 @@ svg#chart.pan{touch-action:auto;cursor:grab}
 .tx.vl{fill:var(--vl);font-size:9px}
 .halo{paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
 .guide{stroke-width:1.2;stroke-dasharray:3 3;fill:none}
-.proc{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 3;fill:none}
+.proc{stroke:var(--ink);stroke-width:2.4;fill:none}.proc.cool{stroke:var(--cool)}.proc.heat{stroke:var(--heat)}.mixln{stroke:var(--muted);stroke-width:1.7;stroke-dasharray:6 4;fill:none}
 .ptl{font:600 11px var(--font-body);fill:var(--on-pt);text-anchor:middle;pointer-events:none}
 
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);padding:6px 8px 8px}
@@ -144,6 +144,9 @@ svg#chart.pan{touch-action:auto;cursor:grab}
 .sw-h{width:18px;height:0;border-top:2px solid var(--hl)}
 .sw-w{width:18px;height:0;border-top:2px dashed var(--wl)}
 .sw-v{width:18px;height:0;border-top:2px solid var(--vl)}
+.sw-cool{width:18px;height:0;border-top:3px solid var(--cool)}
+.sw-heat{width:18px;height:0;border-top:3px solid var(--heat)}
+.sw-mix{width:18px;height:0;border-top:2px dashed var(--muted)}
 .sw-zone{width:16px;height:10px;background:color-mix(in srgb,var(--zone) 28%,transparent);border:1px solid var(--zone)}
 .reads{display:grid;gap:8px}
 .read{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;min-height:56px}
@@ -462,7 +465,7 @@ SHR = |Qs| / |Q|
     <ul>
       <li>V คืออัตราไหลของอากาศที่สถานะต้นทาง (m³/h หรือ CFM)</li>
       <li>เครื่องหมายลบหมายถึงดึงความร้อนออก</li>
-      <li>เส้นกระบวนการบนกราฟเป็นเส้นตรงระหว่างสองจุด ซึ่งเป็นการประมาณ เส้นจริงของคอยล์เย็นเป็นเส้นโค้ง แต่โหลดที่คำนวณขึ้นกับสถานะต้นทางและปลายทางเท่านั้น</li>
+      <li>เส้นกระบวนการบนกราฟเป็นเส้นตรงระหว่างสองจุด (เส้นทึบสีน้ำเงิน = ทำความเย็น, สีแดง = ให้ความร้อน, เส้นประ = เส้นผสมอากาศจากเครื่องมือผสม ซึ่งไม่นับเป็นกระบวนการ) ซึ่งเป็นการประมาณ เส้นจริงของคอยล์เย็นเป็นเส้นโค้ง แต่โหลดที่คำนวณขึ้นกับสถานะต้นทางและปลายทางเท่านั้น</li>
     </ul>
   </div></details>
 
@@ -881,6 +884,24 @@ function rhPath(rh,P,t0,t1,rev){
 function poly(pts){ return pts.map(function(p,i){ return (i?'L':'M')+Xs(p[0]).toFixed(1)+' '+Ys(p[1]).toFixed(1); }).join(''); }
 
 var chartInfo={oor:[],z:null};
+function procKind(A,B){ if(!A||!B||A.err||B.err) return ''; var d=B.h-A.h; return d<-0.05?'cool':(d>0.05?'heat':''); }
+/* dashed mixing lines: for a state made by the mixing tool, the line A -> B that passes through it (not a process) */
+function mixLines(X){
+  var out=[];
+  S.states.forEach(function(m){
+    if(!m.mix||m.mix.length!==2) return;
+    var M=X.c[m.id], A=X.c[m.mix[0]], B=X.c[m.mix[1]];
+    if(!M||!A||!B||M.err||A.err||B.err||m.mix[0]===m.mix[1]||m.mix.indexOf(m.id)>=0) return;
+    function at(x){ var W=x*A.W+(1-x)*B.W, h=x*A.h+(1-x)*B.h; return [(h-2501*W)/(1.006+1.86*W),W]; }
+    var x=Math.abs(A.W-B.W)>1e-6?(M.W-B.W)/(A.W-B.W):(Math.abs(A.h-B.h)>1e-6?(M.h-B.h)/(A.h-B.h):NaN);
+    if(!(x>=-0.001&&x<=1.001)) return;
+    var q=at(x); if(Math.abs(q[0]-M.t)>0.3||Math.abs(q[1]-M.W)>0.0004) return;   /* state was edited by hand: no longer on the line */
+    var pts=[],i; for(i=0;i<=24;i++) pts.push(at(i/24));
+    out.push({pts:pts,a:m.mix[0],b:m.mix[1],id:m.id});
+  });
+  return out;
+}
+function chartKinds(X){ var k={cool:false,heat:false,mix:mixLines(X).length>0}; S.procs.forEach(function(p){ if(p.from===p.to) return; var kd=procKind(X.c[p.from],X.c[p.to]); if(kd) k[kd]=true; }); return k; }
 function chartMarkup(X){
   var P=X.P, IP=isIP(), g='', i, k, clipped='', labels='';
   g+='<defs><clipPath id="clp"><rect x="'+ML+'" y="'+MT+'" width="'+PW+'" height="'+PH+'"/></clipPath></defs>';
@@ -960,13 +981,15 @@ function chartMarkup(X){
   /* processes, guides, markers */
   var oor=[];
   S.states.forEach(function(s){ var c=X.c[s.id]; if(c.err) oor.push('สถานะ '+s.id+' ยังไม่มีค่าที่ใช้ได้'); else if(!inRange(c)) oor.push('สถานะ '+s.id+' อยู่นอกช่วงกราฟ ('+disp(toU('T',TMIN),0)+'–'+disp(toU('T',TMAX),0)+' '+un('t')+', W ไม่เกิน '+disp(toU('W',WMAX*1000),0)+' '+un('w')+')'); });
+  mixLines(X).forEach(function(m){ clipped+='<path class="mixln" d="'+poly(m.pts)+'"/>'; });
   S.procs.forEach(function(p){
     var A=X.c[p.from],B=X.c[p.to]; if(p.from===p.to||!inRange(A)||!inRange(B)) return;
     var x1=Xs(A.t),y1=Ys(A.W),x2=Xs(B.t),y2=Ys(B.W),dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);
     if(len<=26) return;
     var ux=dx/len,uy=dy/len, ex=x2-ux*13, ey=y2-uy*13, sx=x1+ux*11, sy=y1+uy*11;
-    clipped+='<path class="proc" d="M'+sx.toFixed(1)+' '+sy.toFixed(1)+'L'+ex.toFixed(1)+' '+ey.toFixed(1)+'"/>';
-    clipped+='<path d="M'+ex.toFixed(1)+' '+ey.toFixed(1)+'l'+(-ux*8-uy*4.5).toFixed(1)+' '+(-uy*8+ux*4.5).toFixed(1)+'l'+(uy*9).toFixed(1)+' '+(-ux*9).toFixed(1)+'z" fill="var(--ink)"/>';
+    var kd=procKind(A,B), kc=kd==='cool'?'var(--cool)':(kd==='heat'?'var(--heat)':'var(--ink)');
+    clipped+='<path class="proc'+(kd?' '+kd:'')+'" d="M'+sx.toFixed(1)+' '+sy.toFixed(1)+'L'+ex.toFixed(1)+' '+ey.toFixed(1)+'"/>';
+    clipped+='<path d="M'+ex.toFixed(1)+' '+ey.toFixed(1)+'l'+(-ux*8-uy*4.5).toFixed(1)+' '+(-uy*8+ux*4.5).toFixed(1)+'l'+(uy*9).toFixed(1)+' '+(-ux*9).toFixed(1)+'z" fill="'+kc+'"/>';
   });
   var act=S.active, ac=X.c[act], col=scol(act);
   if(inRange(ac)){
@@ -993,6 +1016,10 @@ function renderChart(X){
   if(S.layers.h) lg+='<span><i class="sw-h"></i>h '+un('h')+'</span>';
   if(S.layers.twb) lg+='<span><i class="sw-w"></i>Twb '+un('t')+'</span>';
   if(S.layers.v) lg+='<span><i class="sw-v"></i>v '+un('v')+'</span>';
+  var kk=chartKinds(X);
+  if(kk.cool) lg+='<span><i class="sw-cool"></i>ทำความเย็น</span>';
+  if(kk.heat) lg+='<span><i class="sw-heat"></i>ให้ความร้อน</span>';
+  if(kk.mix) lg+='<span><i class="sw-mix"></i>เส้นผสมอากาศ</span>';
   if(z) lg+='<span><i class="sw-zone"></i>เขตเป้าหมาย: '+z.name+'</span>';
   $('legend').innerHTML=lg;
 
@@ -1130,6 +1157,7 @@ function removeState(id){
   if(S.states.length<2) return;
   S.states=S.states.filter(function(s){return s.id!==id;});
   S.procs=S.procs.filter(function(p){return p.from!==id&&p.to!==id;});
+  S.states.forEach(function(x){ if(x.mix&&x.mix.indexOf(id)>=0) delete x.mix; });
   S.active=S.states[0].id; ui.armDel=false; save(); render();
 }
 
@@ -1257,13 +1285,13 @@ $('cntsw').addEventListener('click',function(e){ var b=e.target.closest('button'
 /* ---------- export (PDF / JPG) ---------- */
 var SANS='"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif', MONO='"IBM Plex Mono",ui-monospace,monospace';
 var PC=['#087E8B','#B45309','#6D3FC0','#1F7A4F','#B4237A','#8A6D00','#2B5FD9','#5B6770'];
-var EXPORT_CSS=':root{--s0:#087E8B;--s1:#B45309;--s2:#6D3FC0;--s3:#1F7A4F;--s4:#B4237A;--s5:#8A6D00;--s6:#2B5FD9;--s7:#5B6770;--ink:#101E32;--muted:#51627A;--grid:#E4EAF2;--line:#D4DCE8;--surface:#fff;--on-pt:#fff;--hl:#B45309;--wl:#2F63B5;--vl:#7C3FA0;--zone:#2E8B63}'+
+var EXPORT_CSS=':root{--s0:#087E8B;--s1:#B45309;--s2:#6D3FC0;--s3:#1F7A4F;--s4:#B4237A;--s5:#8A6D00;--s6:#2B5FD9;--s7:#5B6770;--ink:#101E32;--muted:#51627A;--grid:#E4EAF2;--line:#D4DCE8;--surface:#fff;--on-pt:#fff;--hl:#B45309;--wl:#2F63B5;--vl:#7C3FA0;--zone:#2E8B63;--cool:#1D4ED8;--heat:#DC2626}'+
  '.gl{stroke:var(--grid);stroke-width:1;fill:none}.gl2{stroke:var(--grid);stroke-width:.5;fill:none;opacity:.8}.plot{fill:#fff;stroke:var(--line);stroke-width:1}'+
  '.rh{stroke:var(--muted);stroke-width:.9;fill:none;opacity:.65}.sat{stroke:var(--ink);stroke-width:1.9;fill:none}'+
  '.hln{stroke:var(--hl);fill:none;stroke-width:.7;opacity:.9}.hln.mj{stroke-width:1}.wln{stroke:var(--wl);fill:none;stroke-width:.9;stroke-dasharray:4 2.5;opacity:.9}.vln{stroke:var(--vl);fill:none;stroke-width:.9;opacity:.85}'+
  '.zone{fill:var(--zone);fill-opacity:.24;stroke:var(--zone);stroke-width:1.2}'+
  '.tx{fill:var(--muted);font:10px monospace}.tx.rhl{font-size:9.5px}.tx.cap{font:9.5px sans-serif}.tx.hl{fill:var(--hl);font-size:9.5px}.tx.wl{fill:var(--wl);font-size:9.5px}.tx.vl{fill:var(--vl);font-size:9px}'+
- '.halo{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}.guide{stroke-width:1.2;stroke-dasharray:3 3;fill:none}.proc{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 3;fill:none}'+
+ '.halo{paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}.guide{stroke-width:1.2;stroke-dasharray:3 3;fill:none}.proc{stroke:var(--ink);stroke-width:2.4;fill:none}.proc.cool{stroke:var(--cool)}.proc.heat{stroke:var(--heat)}.mixln{stroke:var(--muted);stroke-width:1.7;stroke-dasharray:6 4;fill:none}'+
  '.ptl{font:600 11px sans-serif;fill:#fff;text-anchor:middle}';
 function exportSvg(X,w,h){
   var g=chartMarkup(X);
@@ -1324,8 +1352,10 @@ function repChart(pg,img,y,maxH){
   if(S.layers.h) items.push(['h '+un('h'),'#B45309','n']);
   if(S.layers.twb) items.push(['Twb '+un('t'),'#2F63B5','d']);
   if(S.layers.v) items.push(['v '+un('v'),'#7C3FA0','n']);
+  var kk=chartKinds(ctx()); if(kk.cool) items.push(['ทำความเย็น','#1D4ED8','t']); if(kk.heat) items.push(['ให้ความร้อน','#DC2626','t']); if(kk.mix) items.push(['เส้นผสมอากาศ','#51627A','d']);
   var z=getZone(); if(z&&!z.bad) items.push(['เขตเป้าหมาย: '+z.name,'#2E8B63','z']);
   items.forEach(function(it){
+    if(lx>12&&lx+10+MW(pg,it[0],{s:3})>198){ lx=12; ly+=5; }
     if(it[2]==='z') RC(pg,lx,ly-2.8,8,3.4,'#D5E8DF'); else LN(pg,lx,ly-1.2,lx+8,ly-1.2,it[1],it[2]==='t'?0.7:0.35,it[2]==='d'?[1.6,1]:null);
     TX(pg,it[0],lx+10,ly,{s:3}); lx+=10+MW(pg,it[0],{s:3})+6;
   });
@@ -1715,7 +1745,7 @@ $('tools').addEventListener('input',function(e){
   S.tools[el.dataset.g][el.dataset.f]=v; save(); renderTools(ctx());
 });
 $('tools').addEventListener('change',function(e){ var el=e.target; if(!el.dataset.g||el.tagName!=='SELECT') return; S.tools[el.dataset.g][el.dataset.f]=el.value; save(); renderTools(ctx()); });
-$('mx-add').addEventListener('click',function(){ var m=ui.mix; if(!m||m.err||m.c.err) return; var id=addCalcState(m.t,m.W*1000); if(id){ save(); render(); toast('เพิ่มสถานะ '+id+' (จุดผสม)'); } });
+$('mx-add').addEventListener('click',function(){ var m=ui.mix; if(!m||m.err||m.c.err) return; var id=addCalcState(m.t,m.W*1000); if(id){ stOf(id).mix=[S.tools.mix.a,S.tools.mix.b]; save(); render(); toast('เพิ่มสถานะ '+id+' (จุดผสม) พร้อมเส้นผสมบนกราฟ'); } });
 $('cl-add').addEventListener('click',function(){
   var c=ui.coil; if(!c||c.err) return; var k=S.tools.coil, from=k.from;
   var id=addCalcState(c.t,c.W*1000); if(!id) return;
