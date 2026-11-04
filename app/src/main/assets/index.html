@@ -182,6 +182,8 @@ svg#chart.pan{touch-action:auto;cursor:grab}
 .toolcard .tiles{margin-top:4px}
 .toolcard .btns{margin-top:4px}
 .toolcard .btn[disabled]{opacity:.45}
+.logorow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logorow img{max-height:52px;max-width:140px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff;padding:4px}
 .toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:9;background:#101E32;color:#F3F6FA;border:1px solid #2E4A6E;border-radius:999px;padding:8px 16px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.25);max-width:88vw;text-align:center}
 .ibtn{flex:none;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
 .ibtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -551,6 +553,11 @@ SHR = |Qs| / |Q|
       <div class="field"><label for="pj-name">ชื่อโปรเจกต์ปัจจุบัน</label><div class="inp txt"><input id="pj-name" type="text" maxlength="60" autocomplete="off"></div></div>
       <p class="note" id="pj-status" role="status"></p>
       <h3 class="h" style="margin-top:6px">ข้อมูลโปรเจกต์ (พิมพ์ในหัวรายงาน)</h3>
+      <div class="field"><label for="mt-company">ชื่อบริษัท</label><div class="inp txt"><input id="mt-company" data-meta="company" type="text" maxlength="80" autocomplete="off"></div></div>
+      <div class="field"><span class="flab">โลโก้บริษัท (.jpg / .png)</span>
+        <div class="logorow"><img id="logo-prev" alt="โลโก้บริษัท" hidden><div class="btns"><button class="btn" id="logo-pick" type="button">เลือกโลโก้</button><button class="btn danger" id="logo-del" type="button" hidden>ลบโลโก้</button></div></div>
+        <input id="logo-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
+        <p class="note" id="logo-status" role="status"></p></div>
       <div class="field"><label for="mt-room">ห้อง / พื้นที่</label><div class="inp txt"><input id="mt-room" data-meta="room" type="text" maxlength="80" autocomplete="off"></div></div>
       <div class="pairs"><div class="field"><label for="mt-drawing">เลขที่แบบ</label><div class="inp txt"><input id="mt-drawing" data-meta="drawing" type="text" maxlength="80" autocomplete="off"></div></div>
       <div class="field"><label for="mt-designer">ผู้ออกแบบ</label><div class="inp txt"><input id="mt-designer" data-meta="designer" type="text" maxlength="80" autocomplete="off"></div></div></div>
@@ -654,7 +661,7 @@ var TK_DEF={mix:{a:'A',b:'B',qa:1000,qb:500},coil:{from:'A',tadp:12,bf:0.2,flow:
 function defaultData(){ return {units:'SI',alt:0,active:'A',
   states:[{id:'A',t:32,mode:'rh',v:70},{id:'B',t:13,mode:'rh',v:90}],
   procs:[{from:'A',to:'B',flow:1000}],
-  zone:'or',custom:{tmin:20,tmax:24,rmin:20,rmax:60},layers:{h:true,twb:false,v:true},tools:clone(TK_DEF),meta:{room:'',drawing:'',designer:'',notes:''}}; }
+  zone:'or',custom:{tmin:20,tmax:24,rmin:20,rmax:60},layers:{h:true,twb:false,v:true},tools:clone(TK_DEF),meta:{company:'',logo:'',room:'',drawing:'',designer:'',notes:''}}; }
 function blankData(units){ var d=defaultData(); d.units=units==='IP'?'IP':'SI'; d.states=[{id:'A',t:24,mode:'rh',v:50}]; d.procs=[]; return d; }
 function clone(x){ return JSON.parse(JSON.stringify(x)); }
 function normData(d){
@@ -665,7 +672,8 @@ function normData(d){
   if(ids.indexOf(o.active)<0) o.active=ids[0];
   o.procs=(Array.isArray(o.procs)?o.procs:[]).filter(function(p){return ids.indexOf(p.from)>=0&&ids.indexOf(p.to)>=0;});
   o.tools={mix:Object.assign({},b.tools.mix,(o.tools||{}).mix),coil:Object.assign({},b.tools.coil,(o.tools||{}).coil),room:Object.assign({},b.tools.room,(o.tools||{}).room)};
-  o.meta=Object.assign({},b.meta,o.meta||{}); ['room','drawing','designer','notes'].forEach(function(k){ o.meta[k]=String(o.meta[k]==null?'':o.meta[k]).slice(0,k==='notes'?300:80); });
+  o.meta=Object.assign({},b.meta,o.meta||{}); ['company','room','drawing','designer','notes'].forEach(function(k){ o.meta[k]=String(o.meta[k]==null?'':o.meta[k]).slice(0,k==='notes'?300:80); });
+  o.meta.logo=(typeof o.meta.logo==='string'&&/^data:image\/(png|jpeg);base64,/.test(o.meta.logo)&&o.meta.logo.length<400000)?o.meta.logo:'';
   if(['or','pt','custom','off'].indexOf(o.zone)<0) o.zone='or';
   if(o.units!=='IP') o.units='SI';
   return o;
@@ -1231,6 +1239,7 @@ function refreshSheet(){
   if($('sheet').hidden) return;
   setVal($('pj-name'),PROJ[CUR].name);
   document.querySelectorAll('[data-meta]').forEach(function(el){ setVal(el,S.meta[el.dataset.meta]||''); });
+  var lp=$('logo-prev'); if(S.meta.logo){ if(lp.getAttribute('src')!==S.meta.logo) lp.src=S.meta.logo; lp.hidden=false; } else { lp.hidden=true; lp.removeAttribute('src'); } $('logo-del').hidden=!S.meta.logo; $('logo-pick').textContent=S.meta.logo?'เปลี่ยนโลโก้':'เลือกโลโก้';
   refreshSheetStatus();
   var ids=Object.keys(PROJ).sort();
   $('pj-list').innerHTML=ids.map(function(id){
@@ -1299,6 +1308,7 @@ function exportSvg(X,w,h){
 }
 function loadImg(svg){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){ res(im); }; im.onerror=function(){ rej(new Error('วาดกราฟไม่สำเร็จ')); }; im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); }); }
 var PXMM=1240/210;
+function loadDataImg(src){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){ res(im); }; im.onerror=function(){ rej(new Error('โหลดโลโก้ไม่ได้')); }; im.src=src; }); }
 function mkPage(){ var c=document.createElement('canvas'); c.width=1240; c.height=1754; var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); return {c:c,g:g}; }
 function fontOf(o){ return (o.w||400)+' '+Math.round((o.s||3.4)*PXMM)+'px '+(o.mono?MONO:SANS); }
 function TX(pg,s,x,y,o){ o=o||{}; var g=pg.g; g.font=fontOf(o); g.fillStyle=o.col||'#101E32'; g.textAlign=o.al||'left'; g.textBaseline='alphabetic'; g.fillText(String(s),x*PXMM,y*PXMM); }
@@ -1309,9 +1319,12 @@ function RC(pg,x,y,w,h,col){ pg.g.fillStyle=col; pg.g.fillRect(x*PXMM,y*PXMM,w*P
 function CI(pg,x,y,r,col){ var g=pg.g; g.fillStyle=col; g.beginPath(); g.arc(x*PXMM,y*PXMM,r*PXMM,0,6.2832); g.fill(); }
 function p2(n){ return (n<10?'0':'')+n; }
 
+var REP_LOGO=null;
 function repHeader(pg,X,sub){
-  var name=PROJ[CUR].name||'ไม่มีชื่อ', dt=new Date();
-  TX(pg,FIT(pg,name,186,{w:600,s:7.5}),12,20,{w:600,s:7.5});
+  var name=PROJ[CUR].name||'ไม่มีชื่อ', dt=new Date(), lw=0;
+  if(REP_LOGO&&REP_LOGO.width&&REP_LOGO.height){ var ra=REP_LOGO.width/REP_LOGO.height, lh=16, lwd=lh*ra; if(lwd>46){ lwd=46; lh=lwd/ra; } pg.g.drawImage(REP_LOGO,(198-lwd)*PXMM,(6+(16-lh)/2)*PXMM,lwd*PXMM,lh*PXMM); lw=lwd+4; }
+  if(S.meta&&S.meta.company) TX(pg,FIT(pg,S.meta.company,186-lw,{w:600,s:3.6}),12,11,{w:600,s:3.6,col:'#51627A'});
+  TX(pg,FIT(pg,name,186-lw,{w:600,s:7.5}),12,20,{w:600,s:7.5});
   TX(pg,(sub||'Psychrometric report')+' · '+dt.getFullYear()+'-'+p2(dt.getMonth()+1)+'-'+p2(dt.getDate())+' · หน่วย '+S.units+' · ความสูง '+fmt(toU('len',altNum()),0)+' '+un('len')+' · ความดัน '+fmt(toU('p',X.P),isIP()?3:2)+' '+un('p'),12,27,{s:3.2,col:'#51627A'});
   var yy=27, M=S.meta||{}, l1=[];
   if(M.room) l1.push('ห้อง/พื้นที่: '+M.room); if(M.drawing) l1.push('แบบ: '+M.drawing); if(M.designer) l1.push('ผู้ออกแบบ: '+M.designer);
@@ -1398,6 +1411,7 @@ function repLoads(pg,X,pages){
 async function renderReport(opts){
   applyRange();
   var X=ctx(), pages=[];
+  REP_LOGO=null; if(S.meta.logo){ try{ REP_LOGO=await loadDataImg(S.meta.logo); }catch(e){ REP_LOGO=null; } }
   try{ await Promise.all([document.fonts.load('600 20px "IBM Plex Sans Thai"'),document.fonts.load('400 20px "IBM Plex Sans Thai"'),document.fonts.load('500 20px "IBM Plex Mono"')]); }catch(e){}
   var img=await loadImg(exportSvg(X,1440,1760));
   var p1=mkPage(); pages.push(p1);
@@ -1526,7 +1540,7 @@ function buildXls(){
   var X=ctx(), IP=isIP(), pj=PROJ[CUR], name=pj.name||'ไม่มีชื่อ', dt=new Date();
   var z=getZone(), zl=z&&!z.bad?(z.name+' '+zT(z)+' · '+zR(z)):(z&&z.bad?z.bad:'ไม่ได้เลือกเกณฑ์ห้อง');
   var r1=[xR([xS('PsyChart','t')]),xR([xS('โปรเจกต์'),xS(name)]),xR([xS('วันที่ส่งออก'),xS(dt.getFullYear()+'-'+p2(dt.getMonth()+1)+'-'+p2(dt.getDate()))]),
-    xR([xS('หน่วย'),xS(S.units)]),xR([xS('ความสูงจากระดับน้ำทะเล ('+un('len')+')'),xN(toU('len',altNum()),0)]),xR([xS('ความดันบรรยากาศ ('+un('p')+')'),xN(toU('p',X.P),IP?3:2)]),xR([xS('เกณฑ์ห้อง'),xS(zl)]),xR([xS('ห้อง/พื้นที่'),xS(S.meta.room)]),xR([xS('เลขที่แบบ'),xS(S.meta.drawing)]),xR([xS('ผู้ออกแบบ'),xS(S.meta.designer)]),xR([xS('หมายเหตุ'),xS(S.meta.notes)]),xR([]),
+    xR([xS('หน่วย'),xS(S.units)]),xR([xS('ความสูงจากระดับน้ำทะเล ('+un('len')+')'),xN(toU('len',altNum()),0)]),xR([xS('ความดันบรรยากาศ ('+un('p')+')'),xN(toU('p',X.P),IP?3:2)]),xR([xS('เกณฑ์ห้อง'),xS(zl)]),xR([xS('บริษัท'),xS(S.meta.company)]),xR([xS('ห้อง/พื้นที่'),xS(S.meta.room)]),xR([xS('เลขที่แบบ'),xS(S.meta.drawing)]),xR([xS('ผู้ออกแบบ'),xS(S.meta.designer)]),xR([xS('หมายเหตุ'),xS(S.meta.notes)]),xR([]),
     xR(['สถานะ','Tdb ('+un('t')+')','RH (%)','W ('+un('w')+')','h ('+un('h')+')','Twb ('+un('t')+')','Tdp ('+un('t')+')','v ('+un('v')+')','เกณฑ์'].map(function(h){ return xS(h,'h'); }))];
   S.states.forEach(function(s){
     var c=X.c[s.id];
@@ -1630,6 +1644,35 @@ $('xls-file').addEventListener('change',function(e){ var f=e.target.files&&e.tar
 /* ---------- project info fields ---------- */
 document.querySelectorAll('[data-meta]').forEach(function(el){ el.addEventListener('input',function(){ S.meta[el.dataset.meta]=el.value; save(); }); });
 
+/* ---------- company logo ---------- */
+function readLogo(file){
+  return new Promise(function(res,rej){
+    var fr=new FileReader(); fr.onerror=function(){ rej(new Error('อ่านไฟล์ไม่ได้')); };
+    fr.onload=function(){
+      var im=new Image(); im.onerror=function(){ rej(new Error('ไฟล์ภาพไม่ถูกต้อง ใช้ได้เฉพาะ .jpg หรือ .png')); };
+      im.onload=function(){
+        var png=/png/i.test(file.type)||/\.png$/i.test(file.name), maxs=[480,320,200], out='', i;
+        for(i=0;i<maxs.length;i++){
+          var sc=Math.min(1,maxs[i]/Math.max(im.width,im.height)), w=Math.max(1,Math.round(im.width*sc)), h=Math.max(1,Math.round(im.height*sc)), c=document.createElement('canvas'), g;
+          c.width=w; c.height=h; g=c.getContext('2d'); if(!png){ g.fillStyle='#fff'; g.fillRect(0,0,w,h); } g.drawImage(im,0,0,w,h);
+          out=c.toDataURL(png?'image/png':'image/jpeg',0.88); if(out.length<250000) break;
+        }
+        if(out.length>=400000) rej(new Error('ภาพซับซ้อนเกินไป ลองใช้ไฟล์โลโก้ที่เล็กลง')); else res(out);
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+$('logo-pick').addEventListener('click',function(){ $('logo-file').click(); });
+$('logo-file').addEventListener('change',async function(e){
+  var f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  var st=$('logo-status'); st.textContent='กำลังเตรียมโลโก้…';
+  try{ S.meta.logo=await readLogo(f); save(); refreshSheet(); st.textContent='ใส่โลโก้แล้ว จะพิมพ์ที่มุมขวาบนของรายงาน'; }
+  catch(err){ st.textContent=(err&&err.message)||'ใส่โลโก้ไม่สำเร็จ'; }
+});
+$('logo-del').addEventListener('click',function(){ S.meta.logo=''; save(); refreshSheet(); $('logo-status').textContent='ลบโลโก้แล้ว'; });
+
 /* ---------- CSV ---------- */
 function csvC(v){ v=String(v); return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function csvR(a){ return a.map(csvC).join(','); }
@@ -1638,7 +1681,7 @@ function buildCsv(){
   save(); applyRange();
   var X=ctx(), IP=isIP(), pj=PROJ[CUR], L=[], M=S.meta;
   L.push(csvR(['PsyChart',pj.name||'']));
-  L.push(csvR(['ห้อง/พื้นที่',M.room])); L.push(csvR(['เลขที่แบบ',M.drawing])); L.push(csvR(['ผู้ออกแบบ',M.designer])); L.push(csvR(['หมายเหตุ',M.notes]));
+  L.push(csvR(['บริษัท',M.company])); L.push(csvR(['ห้อง/พื้นที่',M.room])); L.push(csvR(['เลขที่แบบ',M.drawing])); L.push(csvR(['ผู้ออกแบบ',M.designer])); L.push(csvR(['หมายเหตุ',M.notes]));
   L.push(csvR(['หน่วย',S.units])); L.push(csvR(['ความสูง ('+un('len')+')',nr(toU('len',altNum()),0)])); L.push(csvR(['ความดัน ('+un('p')+')',nr(toU('p',X.P),IP?3:2)])); L.push('');
   L.push(csvR(['สถานะ','Tdb ('+un('t')+')','RH (%)','W ('+un('w')+')','h ('+un('h')+')','Twb ('+un('t')+')','Tdp ('+un('t')+')','v ('+un('v')+')','เกณฑ์']));
   S.states.forEach(function(s){ var c=X.c[s.id]; if(c.err){ L.push(csvR([s.id,c.err])); return; } var zc=zoneCheck(c);
