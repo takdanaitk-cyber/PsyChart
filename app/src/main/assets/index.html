@@ -489,7 +489,7 @@ SHR = |Qs| / |Q|
       <tr><td>อุณหภูมิ</td><td>°C</td><td>°F</td><td class="m">×1.8 + 32</td></tr>
       <tr><td>ผลต่างอุณหภูมิ</td><td>K</td><td>°F</td><td class="m">×1.8</td></tr>
       <tr><td>W</td><td>g/kg</td><td>gr/lb</td><td class="m">×7</td></tr>
-      <tr><td>เอนทัลปี</td><td>kJ/kg</td><td>Btu/lb</td><td class="m">×0.429923</td></tr>
+      <tr><td>เอนทัลปี</td><td>kJ/kg</td><td>Btu/lb</td><td class="m">×0.429923 + 7.689</td></tr>
       <tr><td>ปริมาตรจำเพาะ</td><td>m³/kg</td><td>ft³/lb</td><td class="m">×16.0185</td></tr>
       <tr><td>ความหนาแน่น</td><td>kg/m³</td><td>lb/ft³</td><td class="m">×0.062428</td></tr>
       <tr><td>ความดัน</td><td>kPa</td><td>psi</td><td class="m">×0.145038</td></tr>
@@ -786,11 +786,12 @@ async function initDb(){
 /* ---------- units (state is stored in SI) ---------- */
 var UN={SI:{t:'°C',w:'g/kg',h:'kJ/kg',v:'m³/kg',rho:'kg/m³',p:'kPa',len:'m',flow:'m³/h',pow:'kW',mass:'kg/s',mh:'kg/h'},
         IP:{t:'°F',w:'gr/lb',h:'Btu/lb',v:'ft³/lb',rho:'lb/ft³',p:'psi',len:'ft',flow:'CFM',pow:'Btu/h',mass:'lb/h',mh:'lb/h'}};
+var H0=7.689; /* IP enthalpy datum: 0 Btu/lb at 0 °F dry air (SI: 0 kJ/kg at 0 °C) -> +0.24028*32 */
 var F={dT:1.8,W:7,h:0.429923,v:16.0185,rho:0.062428,p:0.145038,len:3.28084,flow:0.588577,pow:3412.14,mass:7936.64,mh:2.20462};
 function isIP(){ return S.units==='IP'; }
 function un(k){ return UN[S.units][k]; }
-function toU(k,x){ if(!isIP()||!k||typeof x!=='number'||!isFinite(x)) return x; return k==='T'?x*1.8+32:x*F[k]; }
-function fromU(k,x){ if(!isIP()||!k) return x; return k==='T'?(x-32)/1.8:x/F[k]; }
+function toU(k,x){ if(!isIP()||!k||typeof x!=='number'||!isFinite(x)) return x; return k==='T'?x*1.8+32:(k==='h'?x*F.h+H0:x*F[k]); }
+function fromU(k,x){ if(!isIP()||!k) return x; return k==='T'?(x-32)/1.8:(k==='h'?(x-H0)/F.h:x/F[k]); }
 function modeUnit(m){ return m==='rh'?'%':un(MODES[m].u); }
 function applyRange(){ if(isIP()){ TMAX=(120-32)/1.8; WMAX=0.028; } else { TMAX=50; WMAX=0.030; } }
 
@@ -932,9 +933,9 @@ function chartMarkup(X){
 
   /* enthalpy lines */
   if(S.layers.h){
-    var step=IP?2.5/F.h:5, hTop=enth(TMAX,WMAX)+step, n, hv, ts, Wss, a0, a1, pts, tt;
-    for(n=1;n*step<=hTop;n++){
-      hv=n*step; ts=tsatFromH(hv,P); Wss=wFromPw(pws(ts),P);
+    var step=IP?2.5/F.h:5, hTop=enth(TMAX,WMAX)+step, n, hv, ts, Wss, a0, a1, pts, tt, n0=IP?Math.ceil(H0/2.5+1e-9):1;
+    for(n=n0;(IP?(n*2.5-H0)/F.h:n*step)<=hTop;n++){
+      hv=IP?(n*2.5-H0)/F.h:n*step; ts=tsatFromH(hv,P); Wss=wFromPw(pws(ts),P);
       var major=(n%2===0), lab=IP?disp(n*2.5,1):String(hv), start, onSat=false, onTop=false;
       if(ts<TMIN){ start=[TMIN,(hv-1.006*TMIN)/(2501+1.86*TMIN)]; }
       else if(Wss>WMAX){ start=[(hv-2501*WMAX)/(1.006+1.86*WMAX),WMAX]; onTop=true; }
